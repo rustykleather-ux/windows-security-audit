@@ -109,6 +109,100 @@ def save_to_csv(data, filename="audit_results.csv"):
         writer = csv.DictWriter(file, fieldnames=data.keys())
         writer.writeheader()
         writer.writerow(data)
+#  HTML Output
+def save_to_html(data, filename="audit_report.html"):
+    html = f"""
+    <html>
+    <head>
+        <title>Windows Security Audit Report</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 40px;
+            }}
+            h1 {{
+                color: #333;
+            }}
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+            }}
+            th, td {{
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: left;
+                vertical-align: top;
+            }}
+            th {{
+                background-color: #f2f2f2;
+            }}
+            .pass {{
+                color: green;
+                font-weight: bold;
+            }}
+            .fail {{
+                color: red;
+                font-weight: bold;
+            }}
+            .review {{
+                color: orange;
+                font-weight: bold;
+            }}
+            pre {{
+                white-space: pre-wrap;
+                background-color: #f8f8f8;
+                padding: 10px;
+                border: 1px solid #ddd;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>Windows Security Audit Report</h1>
+
+        <h2>System Information</h2>
+        <table>
+            <tr><th>Hostname</th><td>{data.get("hostname")}</td></tr>
+            <tr><th>OS</th><td>{data.get("os")}</td></tr>
+            <tr><th>OS Version</th><td>{data.get("os_version")}</td></tr>
+            <tr><th>Architecture</th><td>{data.get("architecture")}</td></tr>
+            <tr><th>Scan Time</th><td>{data.get("scan_time")}</td></tr>
+        </table>
+
+        <h2>Security Summary</h2>
+        <table>
+            <tr><th>Check</th><th>Result</th></tr>
+            <tr><td>Firewall</td><td>{data.get("firewall_summary")}</td></tr>
+            <tr><td>Defender</td><td>{data.get("defender_summary")}</td></tr>
+            <tr><td>BitLocker</td><td>{data.get("bitlocker_summary")}</td></tr>
+            <tr><td>Password Policy</td><td>{data.get("password_policy_summary")}</td></tr>
+            <tr><td>Failed Logins</td><td>{data.get("failed_login_summary")}</td></tr>
+        </table>
+
+        <h2>Raw Audit Data</h2>
+
+        <h3>Firewall Status</h3>
+        <pre>{data.get("firewall_status")}</pre>
+
+        <h3>Defender Status</h3>
+        <pre>{data.get("defender_status")}</pre>
+
+        <h3>Local Administrators</h3>
+        <pre>{data.get("local_admins")}</pre>
+
+        <h3>BitLocker Status</h3>
+        <pre>{data.get("bitlocker_status")}</pre>
+
+        <h3>Password Policy</h3>
+        <pre>{data.get("password_policy")}</pre>
+
+        <h3>Failed Login Events</h3>
+        <pre>{data.get("failed_logins")}</pre>
+    </body>
+    </html>
+    """
+
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(html)
 
 
 def main():
@@ -128,8 +222,8 @@ def main():
     results["failed_login_summary"] = summarize_failed_logins(results["failed_logins"])
   
     save_to_csv(results)
-
-    print("Audit complete. Results saved to audit_results.csv")
+    save_to_html(results)
+    print("Audit complete. Results saved to audit_results.csv and audit_report.html")
 
 
 if __name__ == "__main__":
