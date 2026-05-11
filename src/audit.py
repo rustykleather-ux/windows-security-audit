@@ -76,7 +76,7 @@ def main():
     results["bitlocker_status"] = get_bitlocker_status()
     results["password_policy"] = get_password_policy()
     results["failed_logins"] = get_failed_logins()
- 
+  
     save_to_csv(results)
 
     print("Audit complete. Results saved to audit_results.csv")
