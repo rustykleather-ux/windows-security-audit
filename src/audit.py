@@ -7,7 +7,7 @@ from datetime import datetime
 def run_powershell(command):
     try:
         result = subprocess.run(
-            ["powershell", "-Command", command],
+            ["powershell", "-Command", command], 
             capture_output=True,
             text=True
         )
