@@ -25,12 +25,6 @@ def get_system_info():
         "scan_time": datetime.now().isoformat()
     }
 
-def get_bitlocker_status():
-    return run_powershell(
-        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConverTo-Json"
-    )
-
-
 def get_firewall_status():
     return run_powershell(
         "Get-NetFirewallProfile | Select-Object Name, Enabled | ConvertTo-Json"
@@ -48,6 +42,10 @@ def get_local_admins():
         "Get-LocalGroupMember -Group Administrators | Select-Object Name, ObjectClass | ConvertTo-Json"
     )
 
+def get_bitlocker_status():
+    return run_powershell(
+        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConvertTo-Json"
+    )
 
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
