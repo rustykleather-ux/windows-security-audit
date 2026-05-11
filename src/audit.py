@@ -63,14 +63,14 @@ def get_password_policy():
     return output
 
 def get_failed_logins():
-    return run_powershell(
-        "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} -MaxEvents 5 | "
-        "Select-Object TimeCreated, Id, ProviderName | ConvertTo-Json"
+    output = run_powershell(
+        'wevtutil qe Security "/q:*[System[(EventID=4625)]]" /c:5 /f:text'
     )
 
-    if not output.strip():
+    if "No events were found" in output:
         return "No failed login events found"
 
+    return output
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=data.keys())
