@@ -5,9 +5,9 @@ from datetime import datetime
 
 
 def summarize_firewall(firewall_status):
-    if  '"Enabled":  1' in firewall_status and firewall_status.count('"Enabled":  1') >= 3:
-        return "PASS -All firewall profiles enabled"
-     return "FAIL - One or more firewall profiles my be disabled"
+    if '"Enabled":  1' in firewall_status and firewall_status.count('"Enabled":  1') >= 3:
+        return "PASS - All firewall profiles enabled"
+    return "FAIL - One or more firewall profiles may be disabled"
 
 def summarize_defender(defender_status)
 if '"RealTimeProtectionEnabled":  true'  in defender_status:
