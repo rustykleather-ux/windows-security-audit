@@ -10,8 +10,8 @@ def summarize_firewall(firewall_status):
     return "FAIL - One or more firewall profiles may be disabled"
 
 def summarize_defender(defender_status):
-if '"RealTimeProtectionEnabled":  true'  in defender_status:
-    return "Pass - All firewall profiles enabled"
+    if '"RealTimeProtectionEnabled":  true'  in defender_status:
+        return "Pass - All firewall profiles enabled"
 return "FAIL - Defender real-time protection may be disabled"
 
 
