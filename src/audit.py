@@ -44,8 +44,11 @@ def get_local_admins():
 
 def get_bitlocker_status():
     return run_powershell(
-        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConvertTo-Json"
+      def get_bitlocker_status():
+    return run_powershell(
+        "manage-bde -status C:"
     )
+    
 
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
