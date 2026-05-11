@@ -47,6 +47,9 @@ def get_bitlocker_status():
        "manage-bde -status C:"
     )  
 
+def get_password_policy():
+    return run_powershell("net accounts")
+
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=data.keys())
@@ -60,6 +63,7 @@ def main():
     results["defender_status"] = get_defender_status()
     results["local_admins"] = get_local_admins()
     results["bitlocker_status"] = get_bitlocker_status()
+    results["password_policy"]= get_password_policy()
 
     save_to_csv(results)
 
