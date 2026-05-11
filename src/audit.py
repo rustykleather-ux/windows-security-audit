@@ -3,6 +3,34 @@ import csv
 import subprocess
 from datetime import datetime
 
+
+def summarize_firewall(firewall_status):
+    if  '"Enabled":  1' in firewall_status and firewall_status.count('"Eman;ed":  1') .= 3:
+        return "PASS -All firewall profiles enabled"
+     return "FAIL - One or more firewall profiles my be disabled"
+
+def summarize_defender(defender_status)
+if '"RealTimeProtectionEnabled":  true'  in defender_status:
+    return "Pass - All firewall profiles enabled"
+return "FAIL - Defender real-time protection may be disabled"
+
+
+def summarize_password_policy(password_policy):
+  if "Minimum password length:" in password_policy and "lockout threshold:" in password_policy:
+      return "PASS - Password policy and lockout policy detected"
+   return "REVIEW - Password policy could not be verified"
+
+
+def  summarize_failed_logins(failed_logins):
+    if "Minimum password length:" in password_policy and "lockout threshold:" in password_policy:
+        return "PASS - Password policy and lockout policy detected"
+     return "REVIEW - Password policy could not be verified"
+
+def summarize_failed_logins(failed_logins):
+    if "Event ID:4625" in failed_logins:
+        return "REVIEW  - Failed login events found"
+     if "No failed login events found"  in failed_logins:
+      return "REVIEW - Failed login status unclear"
  
 def run_powershell(command):
     try:
@@ -80,12 +108,19 @@ def save_to_csv(data, filename="audit_results.csv"):
 
 def main():
     results = get_system_info()
+
     results["firewall_status"] = get_firewall_status()
     results["defender_status"] = get_defender_status()
     results["local_admins"] = get_local_admins()
     results["bitlocker_status"] = get_bitlocker_status()
     results["password_policy"] = get_password_policy()
     results["failed_logins"] = get_failed_logins()
+
+    results["firewall_summary"] = summarize_firewall(results["firewall_status"])
+    results["defender_summary"] = summarize_defender(results["defender_status"])
+    results["bitlocker_summary"] = summarize_bitlocker(results["bitlocker_status"])
+    results["password_policy_summary"] = summarize_password_policy(results["password_policy"])
+    results["failed_login_summary"] = summarize_failed_logins(results["failed_logins"])
   
     save_to_csv(results)
 
