@@ -9,28 +9,33 @@ def summarize_firewall(firewall_status):
         return "PASS - All firewall profiles enabled"
     return "FAIL - One or more firewall profiles may be disabled"
 
+
 def summarize_defender(defender_status):
-    if '"RealTimeProtectionEnabled":  true'  in defender_status:
-        return "Pass - All firewall profiles enabled"
-return "FAIL - Defender real-time protection may be disabled"
+    if '"RealTimeProtectionEnabled":  true' in defender_status:
+        return "PASS - Defender real-time protection enabled"
+    return "FAIL - Defender real-time protection may be disabled"
+
+
+def summarize_bitlocker(bitlocker_status):
+    if "Protection Status:    Protection On" in bitlocker_status:
+        return "PASS - BitLocker protection enabled"
+    if "Protection Status:    Protection Off" in bitlocker_status:
+        return "FAIL - BitLocker protection is off"
+    return "REVIEW - BitLocker status unclear"
 
 
 def summarize_password_policy(password_policy):
-  if "Minimum password length:" in password_policy and "lockout threshold:" in password_policy:
-      return "PASS - Password policy and lockout policy detected"
-   return "REVIEW - Password policy could not be verified"
-
-
-def  summarize_failed_logins(failed_logins):
-    if "Minimum password length:" in password_policy and "lockout threshold:" in password_policy:
+    if "Minimum password length:" in password_policy and "Lockout threshold:" in password_policy:
         return "PASS - Password policy and lockout policy detected"
-     return "REVIEW - Password policy could not be verified"
+    return "REVIEW - Password policy could not be verified"
+
 
 def summarize_failed_logins(failed_logins):
-    if "Event ID:4625" in failed_logins:
-        return "REVIEW  - Failed login events found"
-     if "No failed login events found"  in failed_logins:
-      return "REVIEW - Failed login status unclear"
+    if "Event ID: 4625" in failed_logins:
+        return "REVIEW - Failed login events found"
+    if "No failed login events found" in failed_logins:
+        return "PASS - No failed login events found"
+    return "REVIEW - Failed login status unclear"
  
 def run_powershell(command):
     try:
