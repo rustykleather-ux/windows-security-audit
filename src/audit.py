@@ -55,6 +55,12 @@ def get_password_policy():
 
     return output
 
+def get_failed_logins():
+ return run_powershell(
+      "Get-WinEvent -FilterHashTable @{LogName= 'Security'; Id=4625} -MaxEvents 10 |"
+      "Select-Object TimeCreated, Provider Name, Id, Messge | ConvertTo-Json"
+ )
+
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=data.keys())
