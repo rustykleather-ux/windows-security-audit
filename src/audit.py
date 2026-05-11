@@ -34,7 +34,7 @@ def get_defender_status():
 def get_local_admins():
     return run_powershell(
         "Get-LocalGroupMember | Group Administrators | Select-Object Name, ObjectClass | ConvertTo-Json"
-
+    )
         
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
