@@ -48,7 +48,10 @@ def get_bitlocker_status():
     )  
 
 def get_password_policy():
-    return run_powershell("net accounts")
+    output = run_powershell("net accounts")
+# Clean line breasks for CVS readability
+output = output.replace("\n", " \ ")
+return output
 
 def save_to_csv(data, filename="audit_results.csv"):
     with open(filename, "w", newline="") as file:
