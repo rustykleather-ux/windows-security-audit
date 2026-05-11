@@ -63,7 +63,7 @@ def main():
     results["defender_status"] = get_defender_status()
     results["local_admins"] = get_local_admins()
     results["bitlocker_status"] = get_bitlocker_status()
-    results["password_policy"]= get_password_policy()
+    results["password_policy"] = get_password_policy()
 
     save_to_csv(results)
 
