@@ -25,6 +25,11 @@ def get_system_info():
         "scan_time": datetime.now().isoformat()
     }
 
+def get_bitlocker_status():
+    return run_powershell(
+        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConverTo-Json
+    )
+
 
 def get_firewall_status():
     return run_powershell(
@@ -56,6 +61,7 @@ def main():
     results["firewall_status"] = get_firewall_status()
     results["defender_status"] = get_defender_status()
     results["local_admins"] = get_local_admins()
+    results["bitlocker_status"] = get_bitlocker_status()
 
     save_to_csv(results)
 
