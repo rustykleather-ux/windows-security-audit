@@ -11,7 +11,14 @@ def run_powershell(command):
             capture_output=True,
             text=True
         )
-        return result.stdout.strip()
+        if result.stdout.strip():
+            return result.stdout.strip()
+
+        if result.stderr.strip():
+            return "ERROR: " + result.stderr.strip()
+
+        return "No output returned"
+
     except Exception as e:
         return f"Error: {e}"
 
@@ -56,7 +63,7 @@ def get_password_policy():
     return output
 
 def get_failed_logins():
-    output = run_powershell(
+    return run_powershell(
         "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} -MaxEvents 5 | "
         "Select-Object TimeCreated, Id, ProviderName | ConvertTo-Json"
     )
