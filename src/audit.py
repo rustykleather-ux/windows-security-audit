@@ -27,7 +27,7 @@ def get_system_info():
 
 def get_bitlocker_status():
     return run_powershell(
-        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConverTo-Json
+        "Get-BitLockerVolume | Select-Object MountPoint, VolumeStatus, ProtectionStatus | ConverTo-Json"
     )
 
 
