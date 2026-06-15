@@ -6,6 +6,7 @@
             body {
                 font-family: Arial, sans-serif;
                 margin: 40px;
+                color: #222;
             }
             table {
                 border-collapse: collapse;
@@ -38,6 +39,14 @@
                 background-color: #f8f8f8;
                 padding: 10px;
                 border: 1px solid #ddd;
+                overflow-x: auto;
+            }
+            details {
+                margin-bottom: 12px;
+            }
+            summary {
+                cursor: pointer;
+                font-weight: bold;
             }
         </style>
     </head>
@@ -50,11 +59,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T15:18:17</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T15:44:21</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 64/100</h2>
+        <h2>Overall Weighted Score: 64/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -63,6 +72,9 @@
                 <th>Status</th>
                 <th>Message</th>
                 <th>Score</th>
+                <th>Weight</th>
+                <th>Risk</th>
+                <th>Remediation Guidance</th>
             </tr>
             
         <tr>
@@ -70,6 +82,9 @@
             <td class="pass">PASS</td>
             <td>All firewall profiles are enabled</td>
             <td>10/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Disabled firewall profiles can expose local services to untrusted networks.<br><br><strong>Recommended fix:</strong> Enable Domain, Private, and Public firewall profiles. In PowerShell: Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True</td>
         </tr>
         
         <tr>
@@ -77,6 +92,9 @@
             <td class="pass">PASS</td>
             <td>Microsoft Defender protections are enabled</td>
             <td>10/10</td>
+            <td>12</td>
+            <td>High</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Disabled endpoint protection increases malware and ransomware risk.<br><br><strong>Recommended fix:</strong> Enable Microsoft Defender Antivirus and real-time protection, or verify that another managed EDR/AV is active.</td>
         </tr>
         
         <tr>
@@ -84,6 +102,9 @@
             <td class="review">REVIEW</td>
             <td>Could not calculate signature age: Invalid isoformat string: &#x27;/Date(1781499832000)/&#x27;</td>
             <td>5/10</td>
+            <td>8</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Outdated signatures reduce Defender&#x27;s ability to detect recent threats.<br><br><strong>Recommended fix:</strong> Run Windows Update or Update-MpSignature. Confirm signature updates are managed by policy if this is a domain device.</td>
         </tr>
         
         <tr>
@@ -91,146 +112,9 @@
             <td class="fail">FAIL</td>
             <td>BitLocker protection is off on C:</td>
             <td>0/10</td>
-        </tr>
-        
-        <tr>
-            <td>Windows Update</td>
-            <td class="review">REVIEW</td>
-            <td>2 pending Windows update(s) found</td>
-            <td>6/10</td>
-        </tr>
-        
-        <tr>
-            <td>Installed Software</td>
-            <td class="review">REVIEW</td>
-            <td>2 potentially risky application(s) found: LogMeIn, Wireshark 4.4.9 x64</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>RDP</td>
-            <td class="review">REVIEW</td>
-            <td>RDP is enabled, but Network Level Authentication is enabled</td>
-            <td>6/10</td>
-        </tr>
-        
-        <tr>
-            <td>SMB</td>
-            <td class="review">REVIEW</td>
-            <td>SMB signing is not required</td>
-            <td>6/10</td>
-        </tr>
-        
-        <tr>
-            <td>UAC</td>
-            <td class="pass">PASS</td>
-            <td>UAC is enabled with secure elevation prompts</td>
-            <td>10/10</td>
-        </tr>
-        
-        <tr>
-            <td>Secure Boot / TPM</td>
-            <td class="pass">PASS</td>
-            <td>Secure Boot enabled and TPM ready</td>
-            <td>10/10</td>
-        </tr>
-        
-        <tr>
-            <td>Event Logging</td>
-            <td class="pass">PASS</td>
-            <td>Critical audit categories detected</td>
-            <td>10/10</td>
-        </tr>
-        
-        <tr>
-            <td>Scheduled Tasks</td>
-            <td class="review">REVIEW</td>
-            <td>3 suspicious scheduled task(s) found: \OneDC_Updater, \USER_ESRV_SVC_QUEENCREEK, \ZoomUpdateTaskUser-S-1-5-21-1865810128-1616563830-3526441106-1142</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Autorun Registry Keys</td>
-            <td class="review">REVIEW</td>
-            <td>7 suspicious autorun entrie(s) found: HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MsiTrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MSI TrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Update Binary, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Standalone Update Binary, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\AVGBrowserAutoLaunch_CB5378451B0DF0CF2210DAD8F3D219E1, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\Teams, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\MicrosoftEdgeAutoLaunch_1ADB402EF54FBC975846E942A70290D6</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Startup Folders</td>
-            <td class="review">REVIEW</td>
-            <td>2 suspicious startup folder item(s) found: C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini, C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Send to OneNote.lnk</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Windows Services</td>
-            <td class="review">REVIEW</td>
-            <td>62 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Local Users</td>
-            <td class="review">REVIEW</td>
-            <td>lbladmin does not require a password</td>
-            <td>6/10</td>
-        </tr>
-        
-        <tr>
-            <td>Network Shares</td>
-            <td class="pass">PASS</td>
-            <td>No non-default SMB network shares found</td>
-            <td>10/10</td>
-        </tr>
-        
-        <tr>
-            <td>Share Permissions</td>
-            <td class="pass">PASS</td>
-            <td>No custom share permissions found</td>
-            <td>10/10</td>
-        </tr>
-        
-        <tr>
-            <td>LSA / Credential Guard</td>
-            <td class="review">REVIEW</td>
-            <td>LSA Protection is not enabled; Credential Guard does not appear to be running</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Defender ASR Rules</td>
-            <td class="fail">FAIL</td>
-            <td>No Defender ASR rules configured</td>
-            <td>0/10</td>
-        </tr>
-        
-        <tr>
-            <td>Listening Connections</td>
-            <td class="review">REVIEW</td>
-            <td>8 notable listening port(s): RPC port 135 listening on :: by svchost; RPC port 135 listening on 0.0.0.0 by svchost; NetBIOS port 139 listening on 10.10.3.38 by System; NetBIOS port 139 listening on 192.168.56.1 by System; NetBIOS port 139 listening on 10.10.3.18 by System; SMB port 445 listening on :: by System; RDP port 3389 listening on :: by svchost; RDP port 3389 listening on 0.0.0.0 by svchost</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>PowerShell Security</td>
-            <td class="review">REVIEW</td>
-            <td>Script Block Logging is not enabled; Module Logging is not enabled; PowerShell Transcription is not enabled</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>USB Storage</td>
-            <td class="review">REVIEW</td>
-            <td>USB mass storage is enabled; No removable storage restriction policy detected</td>
-            <td>5/10</td>
-        </tr>
-        
-        <tr>
-            <td>Windows Update Age</td>
-            <td class="pass">PASS</td>
-            <td>Last installed update KB5094135 was installed on 2026-06-10 (5 day(s) ago)</td>
-            <td>10/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>Prioritize remediation.</strong><br><br><strong>Why:</strong> Unencrypted system drives can expose data if the device is lost, stolen, or removed from service.<br><br><strong>Recommended fix:</strong> Enable BitLocker on the operating system drive and securely escrow the recovery key.</td>
         </tr>
         
         <tr>
@@ -238,14 +122,248 @@
             <td class="review">REVIEW</td>
             <td>C: protection is 0; C: encryption is 0%; D: protection is 0; D: encryption is 0%</td>
             <td>5/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Secondary unencrypted volumes may contain sensitive data even when C: is protected.<br><br><strong>Recommended fix:</strong> Enable BitLocker on all fixed data volumes or document why a volume is exempt.</td>
+        </tr>
+        
+        <tr>
+            <td>Windows Update</td>
+            <td class="review">REVIEW</td>
+            <td>2 pending Windows update(s) found</td>
+            <td>6/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Pending security updates may leave known vulnerabilities exploitable.<br><br><strong>Recommended fix:</strong> Install pending Windows updates and reboot if required. Verify WSUS, Intune, or update policy health.</td>
+        </tr>
+        
+        <tr>
+            <td>Windows Update Age</td>
+            <td class="pass">PASS</td>
+            <td>Last installed update KB5094135 was installed on 2026-06-10 (5 day(s) ago)</td>
+            <td>10/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Systems that have not installed updates recently may be missing security patches.<br><br><strong>Recommended fix:</strong> Install the latest cumulative update and confirm the device is checking in to its update management system.</td>
+        </tr>
+        
+        <tr>
+            <td>RDP</td>
+            <td class="review">REVIEW</td>
+            <td>RDP is enabled, but Network Level Authentication is enabled</td>
+            <td>6/10</td>
+            <td>8</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Exposed or weakly configured RDP is commonly abused for unauthorized access and ransomware.<br><br><strong>Recommended fix:</strong> Disable RDP where not needed. If required, enable NLA, restrict firewall scope, and require VPN or strong conditional access.</td>
+        </tr>
+        
+        <tr>
+            <td>SMB</td>
+            <td class="review">REVIEW</td>
+            <td>SMB signing is not required</td>
+            <td>6/10</td>
+            <td>8</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Legacy SMB and weak SMB settings can enable lateral movement and credential exposure.<br><br><strong>Recommended fix:</strong> Disable SMBv1, disable insecure guest logons, and require SMB signing where practical.</td>
+        </tr>
+        
+        <tr>
+            <td>UAC</td>
+            <td class="pass">PASS</td>
+            <td>UAC is enabled with secure elevation prompts</td>
+            <td>10/10</td>
+            <td>8</td>
+            <td>Medium</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Weak UAC settings make privilege escalation and accidental administrative changes easier.<br><br><strong>Recommended fix:</strong> Enable UAC, admin approval mode, and secure desktop prompts.</td>
+        </tr>
+        
+        <tr>
+            <td>Secure Boot / TPM</td>
+            <td class="pass">PASS</td>
+            <td>Secure Boot enabled and TPM ready</td>
+            <td>10/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Secure Boot and TPM help protect boot integrity, BitLocker keys, and credential protections.<br><br><strong>Recommended fix:</strong> Enable TPM and Secure Boot in firmware/UEFI where supported.</td>
+        </tr>
+        
+        <tr>
+            <td>Event Logging</td>
+            <td class="pass">PASS</td>
+            <td>Critical audit categories detected</td>
+            <td>10/10</td>
+            <td>8</td>
+            <td>Medium</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Weak audit policy can leave gaps during incident response and forensic review.<br><br><strong>Recommended fix:</strong> Enable success and failure auditing for logon, account logon, account management, policy change, and privilege use events.</td>
+        </tr>
+        
+        <tr>
+            <td>Installed Software</td>
+            <td class="review">REVIEW</td>
+            <td>2 potentially risky application(s) found: LogMeIn, Wireshark 4.4.9 x64</td>
+            <td>5/10</td>
+            <td>5</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Remote access tools, outdated runtimes, and dual-use utilities can increase attack surface.<br><br><strong>Recommended fix:</strong> Review flagged software, remove unapproved tools, and update or replace outdated applications.</td>
+        </tr>
+        
+        <tr>
+            <td>Scheduled Tasks</td>
+            <td class="review">REVIEW</td>
+            <td>3 suspicious scheduled task(s) found: \OneDC_Updater, \USER_ESRV_SVC_QUEENCREEK, \ZoomUpdateTaskUser-S-1-5-21-1865810128-1616563830-3526441106-1142</td>
+            <td>5/10</td>
+            <td>6</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Scheduled tasks are a common persistence method for malware and unauthorized tools.<br><br><strong>Recommended fix:</strong> Review flagged tasks, confirm the owner and command path, and remove unauthorized entries.</td>
+        </tr>
+        
+        <tr>
+            <td>Autorun Registry Keys</td>
+            <td class="review">REVIEW</td>
+            <td>7 suspicious autorun entry/entries found: HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MsiTrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MSI TrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Update Binary, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Standalone Update Binary, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\AVGBrowserAutoLaunch_CB5378451B0DF0CF2210DAD8F3D219E1, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\Teams, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\MicrosoftEdgeAutoLaunch_1ADB402EF54FBC975846E942A70290D6</td>
+            <td>5/10</td>
+            <td>6</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Autorun keys can launch programs at sign-in and are commonly used for persistence.<br><br><strong>Recommended fix:</strong> Review flagged autorun entries, verify file paths and publishers, and remove unauthorized entries.</td>
+        </tr>
+        
+        <tr>
+            <td>Startup Folders</td>
+            <td class="review">REVIEW</td>
+            <td>2 suspicious startup folder item(s) found: C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini, C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Send to OneNote.lnk</td>
+            <td>5/10</td>
+            <td>5</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Startup folder items can silently launch programs when users sign in.<br><br><strong>Recommended fix:</strong> Review startup folder contents and remove scripts, shortcuts, or executables that are not approved.</td>
+        </tr>
+        
+        <tr>
+            <td>Windows Services</td>
+            <td class="review">REVIEW</td>
+            <td>62 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
+            <td>5/10</td>
+            <td>7</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Services running automatically can provide persistence or privilege escalation opportunities.<br><br><strong>Recommended fix:</strong> Review flagged services, verify executable paths and publishers, and fix unquoted service paths.</td>
+        </tr>
+        
+        <tr>
+            <td>Local Administrators</td>
+            <td class="review">REVIEW</td>
+            <td>4 local administrator account(s) found</td>
+            <td>5/10</td>
+            <td>7</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Too many local administrators increases the chance of credential theft and lateral movement.<br><br><strong>Recommended fix:</strong> Remove unnecessary local admins and manage privileged access through approved groups or LAPS/Windows LAPS.</td>
+        </tr>
+        
+        <tr>
+            <td>Local Users</td>
+            <td class="review">REVIEW</td>
+            <td>lbladmin does not require a password</td>
+            <td>6/10</td>
+            <td>7</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Unexpected enabled local accounts can provide alternate access paths.<br><br><strong>Recommended fix:</strong> Disable unused local accounts, ensure Guest is disabled, and require passwords for enabled accounts.</td>
+        </tr>
+        
+        <tr>
+            <td>Password Policy</td>
+            <td class="review">REVIEW</td>
+            <td>Minimum password length is 8</td>
+            <td>6/10</td>
+            <td>7</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Weak password and lockout policies increase brute-force and password guessing risk.<br><br><strong>Recommended fix:</strong> Set a strong minimum password length and configure account lockout thresholds appropriate for the environment.</td>
+        </tr>
+        
+        <tr>
+            <td>Failed Logins</td>
+            <td class="review">REVIEW</td>
+            <td>2 recent failed login event(s) found</td>
+            <td>5/10</td>
+            <td>6</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Repeated failed logons may indicate password guessing, stale services, or unauthorized access attempts.<br><br><strong>Recommended fix:</strong> Review Event ID 4625 details, source IPs, usernames, and correlated successful logons.</td>
+        </tr>
+        
+        <tr>
+            <td>Network Shares</td>
+            <td class="pass">PASS</td>
+            <td>No non-default SMB network shares found</td>
+            <td>10/10</td>
+            <td>6</td>
+            <td>Medium</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Unnecessary shares can expose sensitive data or broaden lateral movement paths.<br><br><strong>Recommended fix:</strong> Remove unneeded shares and document business owners for required shares.</td>
+        </tr>
+        
+        <tr>
+            <td>Share Permissions</td>
+            <td class="pass">PASS</td>
+            <td>No custom share permissions found</td>
+            <td>10/10</td>
+            <td>8</td>
+            <td>High</td>
+            <td><strong>No action required.</strong><br><br><strong>Why:</strong> Broad share permissions such as Everyone or Guest can expose sensitive files.<br><br><strong>Recommended fix:</strong> Remove Everyone, Guest, and Anonymous access. Limit share permissions to approved groups using least privilege.</td>
+        </tr>
+        
+        <tr>
+            <td>LSA / Credential Guard</td>
+            <td class="review">REVIEW</td>
+            <td>LSA Protection is not enabled; Credential Guard does not appear to be running</td>
+            <td>5/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Without credential protections, attackers may more easily dump or reuse credentials from memory.<br><br><strong>Recommended fix:</strong> Enable LSA protection and Credential Guard where supported. Validate compatibility before broad deployment.</td>
+        </tr>
+        
+        <tr>
+            <td>Defender ASR Rules</td>
+            <td class="fail">FAIL</td>
+            <td>No Defender ASR rules configured</td>
+            <td>0/10</td>
+            <td>10</td>
+            <td>High</td>
+            <td><strong>Prioritize remediation.</strong><br><br><strong>Why:</strong> ASR rules block common exploit and malware behaviors beyond basic antivirus detection.<br><br><strong>Recommended fix:</strong> Enable recommended ASR rules in audit mode first, review impact, then enforce approved rules through Intune, Group Policy, or security baseline.</td>
+        </tr>
+        
+        <tr>
+            <td>Listening Connections</td>
+            <td class="review">REVIEW</td>
+            <td>8 notable listening port(s): RPC port 135 listening on :: by svchost; RPC port 135 listening on 0.0.0.0 by svchost; NetBIOS port 139 listening on 10.10.3.38 by System; NetBIOS port 139 listening on 192.168.56.1 by System; NetBIOS port 139 listening on 10.10.3.18 by System; SMB port 445 listening on :: by System; RDP port 3389 listening on :: by svchost; RDP port 3389 listening on 0.0.0.0 by svchost</td>
+            <td>5/10</td>
+            <td>7</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> Unexpected listening ports can expose services to the network.<br><br><strong>Recommended fix:</strong> Review flagged ports, stop unnecessary services, and restrict exposure with Windows Firewall.</td>
+        </tr>
+        
+        <tr>
+            <td>PowerShell Security</td>
+            <td class="review">REVIEW</td>
+            <td>Script Block Logging is not enabled; Module Logging is not enabled; PowerShell Transcription is not enabled</td>
+            <td>5/10</td>
+            <td>8</td>
+            <td>Medium</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> PowerShell is commonly used in attacks; weak logging reduces detection and investigation capability.<br><br><strong>Recommended fix:</strong> Enable Script Block Logging, Module Logging, Transcription where appropriate, and disable PowerShell v2.</td>
+        </tr>
+        
+        <tr>
+            <td>USB Storage</td>
+            <td class="review">REVIEW</td>
+            <td>USB mass storage is enabled; No removable storage restriction policy detected</td>
+            <td>5/10</td>
+            <td>5</td>
+            <td>Low</td>
+            <td><strong>Review and validate.</strong><br><br><strong>Why:</strong> USB storage can increase data loss and malware introduction risk.<br><br><strong>Recommended fix:</strong> Use removable storage restrictions where required by policy, especially for sensitive workstations.</td>
         </tr>
         
         </table>
 
         <h2>Raw Audit Data</h2>
         
-        <h3>Firewall</h3>
-        <pre>[
+        <details>
+            <summary>Firewall</summary>
+            <pre>[
     {
         &quot;Name&quot;:  &quot;Domain&quot;,
         &quot;Enabled&quot;:  1
@@ -259,9 +377,11 @@
         &quot;Enabled&quot;:  1
     }
 ]</pre>
+        </details>
         
-        <h3>Microsoft Defender</h3>
-        <pre>{
+        <details>
+            <summary>Microsoft Defender</summary>
+            <pre>{
     &quot;AMServiceEnabled&quot;:  true,
     &quot;AntivirusEnabled&quot;:  true,
     &quot;RealTimeProtectionEnabled&quot;:  true,
@@ -269,18 +389,22 @@
     &quot;AntispywareEnabled&quot;:  true,
     &quot;AntivirusSignatureLastUpdated&quot;:  &quot;\/Date(1781499832000)\/&quot;
 }</pre>
+        </details>
         
-        <h3>Defender Signatures</h3>
-        <pre>{
+        <details>
+            <summary>Defender Signatures</summary>
+            <pre>{
     &quot;AntivirusSignatureLastUpdated&quot;:  &quot;\/Date(1781499832000)\/&quot;,
     &quot;AMEngineVersion&quot;:  &quot;1.1.26050.11&quot;,
     &quot;AMProductVersion&quot;:  &quot;4.18.26050.15&quot;,
     &quot;QuickScanAge&quot;:  6,
     &quot;FullScanAge&quot;:  4294967295
 }</pre>
+        </details>
         
-        <h3>BitLocker</h3>
-        <pre>BitLocker Drive Encryption: Configuration Tool version 10.0.26100
+        <details>
+            <summary>BitLocker</summary>
+            <pre>BitLocker Drive Encryption: Configuration Tool version 10.0.26100
 Copyright (C) 2013 Microsoft Corporation. All rights reserved.
 
 Volume C: [Windows]
@@ -295,9 +419,33 @@ Volume C: [Windows]
     Lock Status:          Unlocked
     Identification Field: None
     Key Protectors:       None Found</pre>
+        </details>
         
-        <h3>Windows Update</h3>
-        <pre>{
+        <details>
+            <summary>BitLocker All Volumes</summary>
+            <pre>[
+    {
+        &quot;MountPoint&quot;:  &quot;C:&quot;,
+        &quot;VolumeStatus&quot;:  0,
+        &quot;ProtectionStatus&quot;:  0,
+        &quot;EncryptionPercentage&quot;:  0,
+        &quot;EncryptionMethod&quot;:  0,
+        &quot;LockStatus&quot;:  0
+    },
+    {
+        &quot;MountPoint&quot;:  &quot;D:&quot;,
+        &quot;VolumeStatus&quot;:  0,
+        &quot;ProtectionStatus&quot;:  0,
+        &quot;EncryptionPercentage&quot;:  0,
+        &quot;EncryptionMethod&quot;:  0,
+        &quot;LockStatus&quot;:  0
+    }
+]</pre>
+        </details>
+        
+        <details>
+            <summary>Windows Update</summary>
+            <pre>{
     &quot;PendingUpdates&quot;:  2,
     &quot;RecentHistory&quot;:  [
                           {
@@ -352,9 +500,215 @@ Volume C: [Windows]
                           }
                       ]
 }</pre>
+        </details>
         
-        <h3>Installed Software</h3>
-        <pre>[
+        <details>
+            <summary>Windows Update Age</summary>
+            <pre>{
+    &quot;HotFixID&quot;:  &quot;KB5094135&quot;,
+    &quot;Description&quot;:  &quot;Security Update&quot;,
+    &quot;InstalledOn&quot;:  &quot;2026-06-10&quot;,
+    &quot;AgeDays&quot;:  5
+}</pre>
+        </details>
+        
+        <details>
+            <summary>RDP</summary>
+            <pre>{
+    &quot;RdpEnabled&quot;:  true,
+    &quot;NlaEnabled&quot;:  true,
+    &quot;FirewallRules&quot;:  [
+                          {
+                              &quot;DisplayName&quot;:  &quot;Remote Desktop - User Mode (TCP-In)&quot;,
+                              &quot;Enabled&quot;:  1,
+                              &quot;Direction&quot;:  1,
+                              &quot;Action&quot;:  2
+                          },
+                          {
+                              &quot;DisplayName&quot;:  &quot;Remote Desktop - User Mode (UDP-In)&quot;,
+                              &quot;Enabled&quot;:  1,
+                              &quot;Direction&quot;:  1,
+                              &quot;Action&quot;:  2
+                          },
+                          {
+                              &quot;DisplayName&quot;:  &quot;Remote Desktop - Shadow (TCP-In)&quot;,
+                              &quot;Enabled&quot;:  1,
+                              &quot;Direction&quot;:  1,
+                              &quot;Action&quot;:  2
+                          }
+                      ]
+}</pre>
+        </details>
+        
+        <details>
+            <summary>SMB</summary>
+            <pre>{
+    &quot;EnableSMB1Protocol&quot;:  false,
+    &quot;EnableSMB2Protocol&quot;:  true,
+    &quot;RequireSecuritySignature&quot;:  false,
+    &quot;EnableSecuritySignature&quot;:  false,
+    &quot;EnableInsecureGuestLogons&quot;:  null
+}</pre>
+        </details>
+        
+        <details>
+            <summary>UAC</summary>
+            <pre>{
+    &quot;EnableLUA&quot;:  1,
+    &quot;ConsentPromptBehaviorAdmin&quot;:  5,
+    &quot;PromptOnSecureDesktop&quot;:  1,
+    &quot;FilterAdministratorToken&quot;:  null
+}</pre>
+        </details>
+        
+        <details>
+            <summary>Secure Boot / TPM</summary>
+            <pre>{
+    &quot;SecureBootEnabled&quot;:  true,
+    &quot;TpmPresent&quot;:  true,
+    &quot;TpmReady&quot;:  true,
+    &quot;TpmEnabled&quot;:  true
+}</pre>
+        </details>
+        
+        <details>
+            <summary>Event Logging</summary>
+            <pre>System audit policy
+
+Category/Subcategory                      Setting
+System
+  Security System Extension               No Auditing
+
+  System Integrity                        Success and Failure
+
+  IPsec Driver                            No Auditing
+
+  Other System Events                     Success and Failure
+
+  Security State Change                   Success
+
+Logon/Logoff
+  Logon                                   Success and Failure
+
+  Logoff                                  Success
+
+  Account Lockout                         Success
+
+  IPsec Main Mode                         No Auditing
+
+  IPsec Quick Mode                        No Auditing
+
+  IPsec Extended Mode                     No Auditing
+
+  Special Logon                           Success
+
+  Other Logon/Logoff Events               No Auditing
+
+  Network Policy Server                   Success and Failure
+
+  User / Device Claims                    No Auditing
+
+  Group Membership                        No Auditing
+
+  Access Rights                           No Auditing
+
+Object Access
+  File System                             No Auditing
+
+  Registry                                No Auditing
+
+  Kernel Object                           No Auditing
+
+  SAM                                     No Auditing
+
+  Certification Services                  No Auditing
+
+  Application Generated                   No Auditing
+
+  Handle Manipulation                     No Auditing
+
+  File Share                              No Auditing
+
+  Filtering Platform Packet Drop          No Auditing
+
+  Filtering Platform Connection           No Auditing
+
+  Other Object Access Events              No Auditing
+
+  Detailed File Share                     No Auditing
+
+  Removable Storage                       No Auditing
+
+  Central Policy Staging                  No Auditing
+
+Privilege Use
+  Non Sensitive Privilege Use             No Auditing
+
+  Other Privilege Use Events              No Auditing
+
+  Sensitive Privilege Use                 No Auditing
+
+Detailed Tracking
+  Process Creation                        No Auditing
+
+  Process Termination                     No Auditing
+
+  DPAPI Activity                          No Auditing
+
+  RPC Events                              No Auditing
+
+  Plug and Play Events                    No Auditing
+
+  Token Right Adjusted Events             No Auditing
+
+Policy Change
+  Audit Policy Change                     Success
+
+  Authentication Policy Change            Success
+
+  Authorization Policy Change             No Auditing
+
+  MPSSVC Rule-Level Policy Change         No Auditing
+
+  Filtering Platform Policy Change        No Auditing
+
+  Other Policy Change Events              No Auditing
+
+Account Management
+  Computer Account Management             No Auditing
+
+  Security Group Management               Success
+
+  Distribution Group Management           No Auditing
+
+  Application Group Management            No Auditing
+
+  Other Account Management Events         No Auditing
+
+  User Account Management                 Success
+
+DS Access
+  Directory Service Access                No Auditing
+
+  Directory Service Changes               No Auditing
+
+  Directory Service Replication           No Auditing
+
+  Detailed Directory Service Replication  No Auditing
+
+Account Logon
+  Kerberos Service Ticket Operations      Success and Failure
+
+  Other Account Logon Events              Success and Failure
+
+  Kerberos Authentication Service         Success and Failure
+
+  Credential Validation                   Success and Failure</pre>
+        </details>
+        
+        <details>
+            <summary>Installed Software</summary>
+            <pre>[
     {
         &quot;DisplayName&quot;:  &quot;Adobe Acrobat (64-bit)&quot;,
         &quot;DisplayVersion&quot;:  &quot;26.001.21662&quot;,
@@ -1310,193 +1664,11 @@ Volume C: [Windows]
         &quot;InstallDate&quot;:  &quot;20250304&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>RDP</h3>
-        <pre>{
-    &quot;RdpEnabled&quot;:  true,
-    &quot;NlaEnabled&quot;:  true,
-    &quot;FirewallRules&quot;:  [
-                          {
-                              &quot;DisplayName&quot;:  &quot;Remote Desktop - User Mode (TCP-In)&quot;,
-                              &quot;Enabled&quot;:  1,
-                              &quot;Direction&quot;:  1,
-                              &quot;Action&quot;:  2
-                          },
-                          {
-                              &quot;DisplayName&quot;:  &quot;Remote Desktop - User Mode (UDP-In)&quot;,
-                              &quot;Enabled&quot;:  1,
-                              &quot;Direction&quot;:  1,
-                              &quot;Action&quot;:  2
-                          },
-                          {
-                              &quot;DisplayName&quot;:  &quot;Remote Desktop - Shadow (TCP-In)&quot;,
-                              &quot;Enabled&quot;:  1,
-                              &quot;Direction&quot;:  1,
-                              &quot;Action&quot;:  2
-                          }
-                      ]
-}</pre>
-        
-        <h3>SMB</h3>
-        <pre>{
-    &quot;EnableSMB1Protocol&quot;:  false,
-    &quot;EnableSMB2Protocol&quot;:  true,
-    &quot;RequireSecuritySignature&quot;:  false,
-    &quot;EnableSecuritySignature&quot;:  false,
-    &quot;EnableInsecureGuestLogons&quot;:  null
-}</pre>
-        
-        <h3>UAC</h3>
-        <pre>{
-    &quot;EnableLUA&quot;:  1,
-    &quot;ConsentPromptBehaviorAdmin&quot;:  5,
-    &quot;PromptOnSecureDesktop&quot;:  1,
-    &quot;FilterAdministratorToken&quot;:  null
-}</pre>
-        
-        <h3>Secure Boot / TPM</h3>
-        <pre>{
-    &quot;SecureBootEnabled&quot;:  true,
-    &quot;TpmPresent&quot;:  true,
-    &quot;TpmReady&quot;:  true,
-    &quot;TpmEnabled&quot;:  true
-}</pre>
-        
-        <h3>Event Logging</h3>
-        <pre>System audit policy
-
-Category/Subcategory                      Setting
-System
-  Security System Extension               No Auditing
-
-  System Integrity                        Success and Failure
-
-  IPsec Driver                            No Auditing
-
-  Other System Events                     Success and Failure
-
-  Security State Change                   Success
-
-Logon/Logoff
-  Logon                                   Success and Failure
-
-  Logoff                                  Success
-
-  Account Lockout                         Success
-
-  IPsec Main Mode                         No Auditing
-
-  IPsec Quick Mode                        No Auditing
-
-  IPsec Extended Mode                     No Auditing
-
-  Special Logon                           Success
-
-  Other Logon/Logoff Events               No Auditing
-
-  Network Policy Server                   Success and Failure
-
-  User / Device Claims                    No Auditing
-
-  Group Membership                        No Auditing
-
-  Access Rights                           No Auditing
-
-Object Access
-  File System                             No Auditing
-
-  Registry                                No Auditing
-
-  Kernel Object                           No Auditing
-
-  SAM                                     No Auditing
-
-  Certification Services                  No Auditing
-
-  Application Generated                   No Auditing
-
-  Handle Manipulation                     No Auditing
-
-  File Share                              No Auditing
-
-  Filtering Platform Packet Drop          No Auditing
-
-  Filtering Platform Connection           No Auditing
-
-  Other Object Access Events              No Auditing
-
-  Detailed File Share                     No Auditing
-
-  Removable Storage                       No Auditing
-
-  Central Policy Staging                  No Auditing
-
-Privilege Use
-  Non Sensitive Privilege Use             No Auditing
-
-  Other Privilege Use Events              No Auditing
-
-  Sensitive Privilege Use                 No Auditing
-
-Detailed Tracking
-  Process Creation                        No Auditing
-
-  Process Termination                     No Auditing
-
-  DPAPI Activity                          No Auditing
-
-  RPC Events                              No Auditing
-
-  Plug and Play Events                    No Auditing
-
-  Token Right Adjusted Events             No Auditing
-
-Policy Change
-  Audit Policy Change                     Success
-
-  Authentication Policy Change            Success
-
-  Authorization Policy Change             No Auditing
-
-  MPSSVC Rule-Level Policy Change         No Auditing
-
-  Filtering Platform Policy Change        No Auditing
-
-  Other Policy Change Events              No Auditing
-
-Account Management
-  Computer Account Management             No Auditing
-
-  Security Group Management               Success
-
-  Distribution Group Management           No Auditing
-
-  Application Group Management            No Auditing
-
-  Other Account Management Events         No Auditing
-
-  User Account Management                 Success
-
-DS Access
-  Directory Service Access                No Auditing
-
-  Directory Service Changes               No Auditing
-
-  Directory Service Replication           No Auditing
-
-  Detailed Directory Service Replication  No Auditing
-
-Account Logon
-  Kerberos Service Ticket Operations      Success and Failure
-
-  Other Account Logon Events              Success and Failure
-
-  Kerberos Authentication Service         Success and Failure
-
-  Credential Validation                   Success and Failure</pre>
-        
-        <h3>Scheduled Tasks</h3>
-        <pre>[
+        <details>
+            <summary>Scheduled Tasks</summary>
+            <pre>[
     {
         &quot;TaskName&quot;:  &quot;Adobe Acrobat Update Task&quot;,
         &quot;TaskPath&quot;:  &quot;\\&quot;,
@@ -1842,9 +2014,11 @@ Account Logon
         &quot;Arguments&quot;:  null
     }
 ]</pre>
+        </details>
         
-        <h3>Autorun Registry Keys</h3>
-        <pre>[
+        <details>
+            <summary>Autorun Registry Keys</summary>
+            <pre>[
     {
         &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
         &quot;Name&quot;:  &quot;SecurityHealth&quot;,
@@ -1951,9 +2125,11 @@ Account Logon
         &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\Intel Graphics Software\\IntelGraphicsSoftware.exe\&quot; -s&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>Startup Folders</h3>
-        <pre>[
+        <details>
+            <summary>Startup Folders</summary>
+            <pre>[
     {
         &quot;StartupPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup&quot;,
         &quot;Name&quot;:  &quot;desktop.ini&quot;,
@@ -1979,9 +2155,11 @@ Account Logon
         &quot;LastWriteTime&quot;:  &quot;\/Date(1711956244058)\/&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>Windows Services</h3>
-        <pre>[
+        <details>
+            <summary>Windows Services</summary>
+            <pre>[
     {
         &quot;Name&quot;:  &quot;AdobeARMservice&quot;,
         &quot;DisplayName&quot;:  &quot;Adobe Acrobat Update Service&quot;,
@@ -2831,9 +3009,37 @@ Account Logon
         &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_37.114.10001.0_x64__8wekyb3d8bbwe\\GamingServices.exe\&quot;&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>Local Users</h3>
-        <pre>[
+        <details>
+            <summary>Local Administrators</summary>
+            <pre>[
+    {
+        &quot;Name&quot;:  &quot;LBL\\Domain Admins&quot;,
+        &quot;ObjectClass&quot;:  &quot;Group&quot;,
+        &quot;PrincipalSource&quot;:  2
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\Administrator&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\lbladmin&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\LogMeInRemoteUser&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    }
+]</pre>
+        </details>
+        
+        <details>
+            <summary>Local Users</summary>
+            <pre>[
     {
         &quot;Name&quot;:  &quot;Administrator&quot;,
         &quot;Enabled&quot;:  false,
@@ -2901,15 +3107,166 @@ Account Logon
         &quot;Description&quot;:  &quot;A user account managed and used by the system for Windows Defender Application Guard scenarios.&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>Network Shares</h3>
-        <pre>No output returned</pre>
+        <details>
+            <summary>Password Policy</summary>
+            <pre>Force user logoff how long after time expires?:       Never
+Minimum password age (days):                          1
+Maximum password age (days):                          60
+Minimum password length:                              8
+Length of password history maintained:                5
+Lockout threshold:                                    5
+Lockout duration (minutes):                           15
+Lockout observation window (minutes):                 15
+Computer role:                                        WORKSTATION
+The command completed successfully.</pre>
+        </details>
         
-        <h3>Share Permissions</h3>
-        <pre>No output returned</pre>
+        <details>
+            <summary>Failed Logins</summary>
+            <pre>Event[0]
+  Log Name: Security
+  Source: Microsoft-Windows-Security-Auditing
+  Date: 2026-06-05T11:47:44.9330000Z
+  Event ID: 4625
+  Task: Logon 
+  Level: Information 
+  Opcode: Info  
+  Keyword: Audit Failure, 
+  User: N/A
+  User Name: N/A
+  Computer: LL-IT.lbl.local
+  Description: 
+An account failed to log on.
+
+Subject:
+	Security ID:		S-1-5-18
+	Account Name:		LL-IT$
+	Account Domain:		LBL
+	Logon ID:		0x3E7
+
+Logon Type:			2
+
+Account For Which Logon Failed:
+	Security ID:		S-1-0-0
+	Account Name:		rfolsom
+	Account Domain:		LBL
+
+Failure Information:
+	Failure Reason:		Unknown user name or bad password.
+	Status:			0xC000006D
+	Sub Status:		0xC000006A
+
+Process Information:
+	Caller Process ID:	0xff8
+	Caller Process Name:	C:\Windows\System32\svchost.exe
+
+Network Information:
+	Workstation Name:	LL-IT
+	Source Network Address:	127.0.0.1
+	Source Port:		0
+
+Detailed Authentication Information:
+	Logon Process:		User32 
+	Authentication Package:	Negotiate
+	Transited Services:	-
+	Package Name (NTLM only):	-
+	Key Length:		0
+
+This event is generated when a logon request fails. It is generated on the computer where access was attempted.
+
+The Subject fields indicate the account on the local system which requested the logon. This is most commonly a service such as the Server service, or a local process such as Winlogon.exe or Services.exe.
+
+The Logon Type field indicates the kind of logon that was requested. The most common types are 2 (interactive) and 3 (network).
+
+The Process Information fields indicate which account and process on the system requested the logon.
+
+The Network Information fields indicate where a remote logon request originated. Workstation name is not always available and may be left blank in some cases.
+
+The authentication information fields provide detailed information about this specific logon request.
+	- Transited services indicate which intermediate services have participated in this logon request.
+	- Package name indicates which sub-protocol was used among the NTLM protocols.
+	- Key length indicates the length of the generated session key. This will be 0 if no session key was requested. 
+
+Event[1]
+  Log Name: Security
+  Source: Microsoft-Windows-Security-Auditing
+  Date: 2026-06-09T09:32:33.3310000Z
+  Event ID: 4625
+  Task: Logon 
+  Level: Information 
+  Opcode: Info  
+  Keyword: Audit Failure, 
+  User: N/A
+  User Name: N/A
+  Computer: LL-IT.lbl.local
+  Description: 
+An account failed to log on.
+
+Subject:
+	Security ID:		S-1-5-19
+	Account Name:		LOCAL SERVICE
+	Account Domain:		NT AUTHORITY
+	Logon ID:		0x3E5
+
+Logon Type:			2
+
+Account For Which Logon Failed:
+	Security ID:		S-1-0-0
+	Account Name:		rfolsom
+	Account Domain:		-
+
+Failure Information:
+	Failure Reason:		An Error occured during Logon.
+	Status:			0xC000005E
+	Sub Status:		0x0
+
+Process Information:
+	Caller Process ID:	0x151c
+	Caller Process Name:	C:\Windows\System32\WUDFHost.exe
+
+Network Information:
+	Workstation Name:	LL-IT
+	Source Network Address:	-
+	Source Port:		-
+
+Detailed Authentication Information:
+	Logon Process:		Advapi  
+	Authentication Package:	MICROSOFT_AUTHENTICATION_PACKAGE_V1_0
+	Transited Services:	-
+	Package Name (NTLM only):	-
+	Key Length:		0
+
+This event is generated when a logon request fails. It is generated on the computer where access was attempted.
+
+The Subject fields indicate the account on the local system which requested the logon. This is most commonly a service such as the Server service, or a local process such as Winlogon.exe or Services.exe.
+
+The Logon Type field indicates the kind of logon that was requested. The most common types are 2 (interactive) and 3 (network).
+
+The Process Information fields indicate which account and process on the system requested the logon.
+
+The Network Information fields indicate where a remote logon request originated. Workstation name is not always available and may be left blank in some cases.
+
+The authentication information fields provide detailed information about this specific logon request.
+	- Transited services indicate which intermediate services have participated in this logon request.
+	- Package name indicates which sub-protocol was used among the NTLM protocols.
+	- Key length indicates the length of the generated session key. This will be 0 if no session key was requested. </pre>
+        </details>
         
-        <h3>LSA / Credential Guard</h3>
-        <pre>{
+        <details>
+            <summary>Network Shares</summary>
+            <pre>No output returned</pre>
+        </details>
+        
+        <details>
+            <summary>Share Permissions</summary>
+            <pre>No output returned</pre>
+        </details>
+        
+        <details>
+            <summary>LSA / Credential Guard</summary>
+            <pre>{
     &quot;RunAsPPL&quot;:  2,
     &quot;RunAsPPLBoot&quot;:  2,
     &quot;SecurityServicesConfigured&quot;:  [
@@ -2921,15 +3278,19 @@ Account Logon
                                 ],
     &quot;VirtualizationBasedSecurityStatus&quot;:  2
 }</pre>
+        </details>
         
-        <h3>Defender ASR Rules</h3>
-        <pre>{
+        <details>
+            <summary>Defender ASR Rules</summary>
+            <pre>{
     &quot;AttackSurfaceReductionRules_Ids&quot;:  null,
     &quot;AttackSurfaceReductionRules_Actions&quot;:  null
 }</pre>
+        </details>
         
-        <h3>Listening Connections</h3>
-        <pre>[
+        <details>
+            <summary>Listening Connections</summary>
+            <pre>[
     {
         &quot;LocalAddress&quot;:  &quot;::&quot;,
         &quot;LocalPort&quot;:  135,
@@ -3267,48 +3628,25 @@ Account Logon
         &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
     }
 ]</pre>
+        </details>
         
-        <h3>PowerShell Security</h3>
-        <pre>{
+        <details>
+            <summary>PowerShell Security</summary>
+            <pre>{
     &quot;ScriptBlockLogging&quot;:  null,
     &quot;ModuleLogging&quot;:  null,
     &quot;Transcription&quot;:  null,
     &quot;PowerShellV2State&quot;:  null
 }</pre>
+        </details>
         
-        <h3>USB Storage</h3>
-        <pre>{
+        <details>
+            <summary>USB Storage</summary>
+            <pre>{
     &quot;USBSTORStart&quot;:  3,
     &quot;RemovableStoragePolicyExists&quot;:  false
 }</pre>
-        
-        <h3>Windows Update Age</h3>
-        <pre>{
-    &quot;HotFixID&quot;:  &quot;KB5094135&quot;,
-    &quot;Description&quot;:  &quot;Security Update&quot;,
-    &quot;InstalledOn&quot;:  &quot;2026-06-10&quot;,
-    &quot;AgeDays&quot;:  5
-}</pre>
-        
-        <h3>BitLocker All Volumes</h3>
-        <pre>[
-    {
-        &quot;MountPoint&quot;:  &quot;C:&quot;,
-        &quot;VolumeStatus&quot;:  0,
-        &quot;ProtectionStatus&quot;:  0,
-        &quot;EncryptionPercentage&quot;:  0,
-        &quot;EncryptionMethod&quot;:  0,
-        &quot;LockStatus&quot;:  0
-    },
-    {
-        &quot;MountPoint&quot;:  &quot;D:&quot;,
-        &quot;VolumeStatus&quot;:  0,
-        &quot;ProtectionStatus&quot;:  0,
-        &quot;EncryptionPercentage&quot;:  0,
-        &quot;EncryptionMethod&quot;:  0,
-        &quot;LockStatus&quot;:  0
-    }
-]</pre>
+        </details>
         
     </body>
     </html>
