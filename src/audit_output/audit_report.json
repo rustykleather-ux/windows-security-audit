@@ -4,10 +4,10 @@
         "os": "Windows",
         "os_version": "10.0.26200",
         "architecture": "AMD64",
-        "scan_time": "2026-06-15T08:41:50",
+        "scan_time": "2026-06-15T08:45:23",
         "running_as_admin": false
     },
-    "overall_score": 68,
+    "overall_score": 67,
     "checks": {
         "Firewall": {
             "summary": {
@@ -56,6 +56,14 @@
                 "score": 5
             },
             "raw": ""
+        },
+        "Windows Update": {
+            "summary": {
+                "status": "REVIEW",
+                "message": "1 pending Windows update(s) found",
+                "score": 6
+            },
+            "raw": "{\n    \"PendingUpdates\":  1,\n    \"RecentHistory\":  [\n                          {\n                              \"Date\":  \"\\/Date(1781548310000)\\/\",\n                              \"Title\":  \"Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.453.105.0) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781287460000)\\/\",\n                              \"Title\":  \"Microsoft Corporation AudioProcessingObject Driver Update (1.0.3.56670)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781287457000)\\/\",\n                              \"Title\":  \"Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.453.51.0) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781287450000)\\/\",\n                              \"Title\":  \"Windows Malicious Software Removal Tool x64 - v5.142 (KB890830)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781202576000)\\/\",\n                              \"Title\":  \"Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.453.41.0) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781125842000)\\/\",\n                              \"Title\":  \"2026-06 Security Update (KB5094126) (26200.8655)\",\n                              \"ResultCode\":  1\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781116528000)\\/\",\n                              \"Title\":  \"Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.453.23.0) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781050656000)\\/\",\n                              \"Title\":  \"9PLJQ12FQ3CV-MicrosoftCorporationII.WinAppRuntime.Main.1.8\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781050578000)\\/\",\n                              \"Title\":  \"Update for Microsoft Defender Antivirus antimalware platform - KB4052623 (Version 4.18.26050.15) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          },\n                          {\n                              \"Date\":  \"\\/Date(1781034750000)\\/\",\n                              \"Title\":  \"Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.453.8.0) - Current Channel (Broad)\",\n                              \"ResultCode\":  2\n                          }\n                      ]\n}"
         }
     }
 }
