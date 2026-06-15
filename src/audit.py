@@ -1231,6 +1231,93 @@ def audit_share_permissions():
         "No risky share permissions detected",
         10
     ), result["stdout"]
+def audit_lsa_credential_guard():
+    command = (
+        "$lsa = Get-ItemProperty "
+        "-Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' "
+        "-ErrorAction SilentlyContinue; "
+        "$dg = Get-CimInstance -ClassName Win32_DeviceGuard "
+        "-Namespace root\\Microsoft\\Windows\\DeviceGuard "
+        "-ErrorAction SilentlyContinue; "
+        "[PSCustomObject]@{ "
+        "RunAsPPL = $lsa.RunAsPPL; "
+        "RunAsPPLBoot = $lsa.RunAsPPLBoot; "
+        "SecurityServicesConfigured = $dg.SecurityServicesConfigured; "
+        "SecurityServicesRunning = $dg.SecurityServicesRunning; "
+        "VirtualizationBasedSecurityStatus = $dg.VirtualizationBasedSecurityStatus "
+        "} | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "LSA/Credential Guard status could not be verified", 5), result["stdout"]
+
+    issues = []
+
+    if data.get("RunAsPPL") != 1:
+        issues.append("LSA Protection is not enabled")
+
+    running = data.get("SecurityServicesRunning") or []
+
+    if isinstance(running, int):
+        running = [running]
+
+    if 1 not in running:
+        issues.append("Credential Guard does not appear to be running")
+
+    if not issues:
+        return check_result("PASS", "LSA Protection and Credential Guard appear enabled", 10), result["stdout"]
+
+    return check_result("REVIEW", "; ".join(issues), 5), result["stdout"]
+
+def audit_defender_asr_rules():
+    command = (
+        "$prefs = Get-MpPreference; "
+        "[PSCustomObject]@{ "
+        "AttackSurfaceReductionRules_Ids = $prefs.AttackSurfaceReductionRules_Ids; "
+        "AttackSurfaceReductionRules_Actions = $prefs.AttackSurfaceReductionRules_Actions "
+        "} | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "Defender ASR rule status could not be verified", 5), result["stdout"]
+
+    ids = data.get("AttackSurfaceReductionRules_Ids") or []
+    actions = data.get("AttackSurfaceReductionRules_Actions") or []
+
+    if isinstance(ids, str):
+        ids = [ids]
+
+    if isinstance(actions, int):
+        actions = [actions]
+
+    enabled_count = sum(1 for action in actions if action == 1)
+    audit_count = sum(1 for action in actions if action == 2)
+    disabled_count = sum(1 for action in actions if action == 0)
+
+    if not ids:
+        return check_result("FAIL", "No Defender ASR rules configured", 0), result["stdout"]
+
+    if enabled_count >= 5:
+        return check_result(
+            "PASS",
+            f"{enabled_count} ASR rule(s) enabled, {audit_count} in audit mode, {disabled_count} disabled",
+            10
+        ), result["stdout"]
+
+    if enabled_count > 0 or audit_count > 0:
+        return check_result(
+            "REVIEW",
+            f"{enabled_count} ASR rule(s) enabled, {audit_count} in audit mode, {disabled_count} disabled",
+            6
+        ), result["stdout"]
+
+    return check_result("FAIL", "ASR rules exist but none are enabled or in audit mode", 0), result["stdout"]
 
 def main():
     checks = {}
@@ -1254,6 +1341,8 @@ def main():
         "Local Users": audit_local_users,
         "Network Shares": audit_network_shares,
         "Share Permissions": audit_share_permissions,
+        "LSA / Credential Guard": audit_lsa_credential_guard,
+        "Defender ASR Rules": audit_defender_asr_rules,
 }
 
     for name, function in audit_functions.items():
