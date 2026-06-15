@@ -18,6 +18,38 @@ def is_admin():
     except Exception:
         return False
 
+def audit_windows_update():
+    command = (
+        "$session = New-Object -ComObject Microsoft.Update.Session; "
+        "$searcher = $session.CreateUpdateSearcher(); "
+        "$historyCount = $searcher.GetTotalHistoryCount(); "
+        "$history = $searcher.QueryHistory(0, [Math]::Min(10, $historyCount)) | "
+        "Select-Object Date, Title, ResultCode; "
+        "$pending = $searcher.Search('IsInstalled=0 and Type=''Software''').Updates.Count; "
+        "[PSCustomObject]@{ "
+        "PendingUpdates = $pending; "
+        "RecentHistory = $history "
+        "} | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "Windows Update status could not be verified", 5), result["stdout"]
+
+    pending = data.get("PendingUpdates", None)
+
+    if pending is None:
+        return check_result("REVIEW", "Pending update count could not be determined", 5), result["stdout"]
+
+    if pending == 0:
+        return check_result("PASS", "No pending Windows software updates found", 10), result["stdout"]
+
+    if pending <= 5:
+        return check_result("REVIEW", f"{pending} pending Windows update(s) found", 6), result["stdout"]
+
+    return check_result("FAIL", f"{pending} pending Windows update(s) found", 2), result["stdout"]
 
 def run_powershell(command, timeout=30):
     try:
@@ -392,6 +424,7 @@ def main():
         "BitLocker": audit_bitlocker,
         "Password Policy": audit_password_policy,
         "Failed Logins": audit_failed_logins,
+        "Windows Update": audit_windows_update,
     }
 
     for name, function in audit_functions.items():

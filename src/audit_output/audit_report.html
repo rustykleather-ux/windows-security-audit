@@ -1,0 +1,189 @@
+
+    <html>
+    <head>
+        <title>Windows Security Audit Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 25px;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: left;
+                vertical-align: top;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            .pass {
+                color: green;
+                font-weight: bold;
+            }
+            .fail {
+                color: red;
+                font-weight: bold;
+            }
+            .review {
+                color: orange;
+                font-weight: bold;
+            }
+            pre {
+                white-space: pre-wrap;
+                background-color: #f8f8f8;
+                padding: 10px;
+                border: 1px solid #ddd;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Windows Security Audit Report</h1>
+
+        <h2>System Information</h2>
+        <table>
+            <tr><th>Hostname</th><td>LL-IT</td></tr>
+            <tr><th>OS</th><td>Windows</td></tr>
+            <tr><th>OS Version</th><td>10.0.26200</td></tr>
+            <tr><th>Architecture</th><td>AMD64</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T08:41:50</td></tr>
+            <tr><th>Running as Admin</th><td>False</td></tr>
+        </table>
+
+        <h2>Overall Score: 68/100</h2>
+
+        <h2>Security Summary</h2>
+        <table>
+            <tr>
+                <th>Check</th>
+                <th>Status</th>
+                <th>Message</th>
+                <th>Score</th>
+            </tr>
+            
+        <tr>
+            <td>Firewall</td>
+            <td class="pass">PASS</td>
+            <td>All firewall profiles are enabled</td>
+            <td>10/10</td>
+        </tr>
+        
+        <tr>
+            <td>Microsoft Defender</td>
+            <td class="pass">PASS</td>
+            <td>Microsoft Defender protections are enabled</td>
+            <td>10/10</td>
+        </tr>
+        
+        <tr>
+            <td>Local Administrators</td>
+            <td class="review">REVIEW</td>
+            <td>4 local administrator account(s) found</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>BitLocker</td>
+            <td class="review">REVIEW</td>
+            <td>BitLocker status is unclear</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Password Policy</td>
+            <td class="review">REVIEW</td>
+            <td>Minimum password length is 8</td>
+            <td>6/10</td>
+        </tr>
+        
+        <tr>
+            <td>Failed Logins</td>
+            <td class="review">REVIEW</td>
+            <td>Failed login status could not be verified</td>
+            <td>5/10</td>
+        </tr>
+        
+        </table>
+
+        <h2>Raw Audit Data</h2>
+        
+        <h3>Firewall</h3>
+        <pre>[
+    {
+        &quot;Name&quot;:  &quot;Domain&quot;,
+        &quot;Enabled&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;Private&quot;,
+        &quot;Enabled&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;Public&quot;,
+        &quot;Enabled&quot;:  1
+    }
+]</pre>
+        
+        <h3>Microsoft Defender</h3>
+        <pre>{
+    &quot;AMServiceEnabled&quot;:  true,
+    &quot;AntivirusEnabled&quot;:  true,
+    &quot;RealTimeProtectionEnabled&quot;:  true,
+    &quot;IoavProtectionEnabled&quot;:  true,
+    &quot;AntispywareEnabled&quot;:  true,
+    &quot;AntivirusSignatureLastUpdated&quot;:  &quot;\/Date(1781499832000)\/&quot;
+}</pre>
+        
+        <h3>Local Administrators</h3>
+        <pre>[
+    {
+        &quot;Name&quot;:  &quot;LBL\\Domain Admins&quot;,
+        &quot;ObjectClass&quot;:  &quot;Group&quot;,
+        &quot;PrincipalSource&quot;:  2
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\Administrator&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\lbladmin&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    },
+    {
+        &quot;Name&quot;:  &quot;LL-IT\\LogMeInRemoteUser&quot;,
+        &quot;ObjectClass&quot;:  &quot;User&quot;,
+        &quot;PrincipalSource&quot;:  1
+    }
+]</pre>
+        
+        <h3>BitLocker</h3>
+        <pre>BitLocker Drive Encryption: Configuration Tool version 10.0.26100
+Copyright (C) 2013 Microsoft Corporation. All rights reserved.
+
+ERROR: An attempt to access a required resource was denied.
+
+Check that you have administrative rights on the computer.</pre>
+        
+        <h3>Password Policy</h3>
+        <pre>Force user logoff how long after time expires?:       Never
+Minimum password age (days):                          1
+Maximum password age (days):                          60
+Minimum password length:                              8
+Length of password history maintained:                5
+Lockout threshold:                                    5
+Lockout duration (minutes):                           15
+Lockout observation window (minutes):                 15
+Computer role:                                        WORKSTATION
+The command completed successfully.</pre>
+        
+        <h3>Failed Logins</h3>
+        <pre></pre>
+        
+    </body>
+    </html>
+    

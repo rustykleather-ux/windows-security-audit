@@ -1,0 +1,61 @@
+{
+    "system": {
+        "hostname": "LL-IT",
+        "os": "Windows",
+        "os_version": "10.0.26200",
+        "architecture": "AMD64",
+        "scan_time": "2026-06-15T08:41:50",
+        "running_as_admin": false
+    },
+    "overall_score": 68,
+    "checks": {
+        "Firewall": {
+            "summary": {
+                "status": "PASS",
+                "message": "All firewall profiles are enabled",
+                "score": 10
+            },
+            "raw": "[\n    {\n        \"Name\":  \"Domain\",\n        \"Enabled\":  1\n    },\n    {\n        \"Name\":  \"Private\",\n        \"Enabled\":  1\n    },\n    {\n        \"Name\":  \"Public\",\n        \"Enabled\":  1\n    }\n]"
+        },
+        "Microsoft Defender": {
+            "summary": {
+                "status": "PASS",
+                "message": "Microsoft Defender protections are enabled",
+                "score": 10
+            },
+            "raw": "{\n    \"AMServiceEnabled\":  true,\n    \"AntivirusEnabled\":  true,\n    \"RealTimeProtectionEnabled\":  true,\n    \"IoavProtectionEnabled\":  true,\n    \"AntispywareEnabled\":  true,\n    \"AntivirusSignatureLastUpdated\":  \"\\/Date(1781499832000)\\/\"\n}"
+        },
+        "Local Administrators": {
+            "summary": {
+                "status": "REVIEW",
+                "message": "4 local administrator account(s) found",
+                "score": 5
+            },
+            "raw": "[\n    {\n        \"Name\":  \"LBL\\\\Domain Admins\",\n        \"ObjectClass\":  \"Group\",\n        \"PrincipalSource\":  2\n    },\n    {\n        \"Name\":  \"LL-IT\\\\Administrator\",\n        \"ObjectClass\":  \"User\",\n        \"PrincipalSource\":  1\n    },\n    {\n        \"Name\":  \"LL-IT\\\\lbladmin\",\n        \"ObjectClass\":  \"User\",\n        \"PrincipalSource\":  1\n    },\n    {\n        \"Name\":  \"LL-IT\\\\LogMeInRemoteUser\",\n        \"ObjectClass\":  \"User\",\n        \"PrincipalSource\":  1\n    }\n]"
+        },
+        "BitLocker": {
+            "summary": {
+                "status": "REVIEW",
+                "message": "BitLocker status is unclear",
+                "score": 5
+            },
+            "raw": "BitLocker Drive Encryption: Configuration Tool version 10.0.26100\nCopyright (C) 2013 Microsoft Corporation. All rights reserved.\n\nERROR: An attempt to access a required resource was denied.\n\nCheck that you have administrative rights on the computer."
+        },
+        "Password Policy": {
+            "summary": {
+                "status": "REVIEW",
+                "message": "Minimum password length is 8",
+                "score": 6
+            },
+            "raw": "Force user logoff how long after time expires?:       Never\nMinimum password age (days):                          1\nMaximum password age (days):                          60\nMinimum password length:                              8\nLength of password history maintained:                5\nLockout threshold:                                    5\nLockout duration (minutes):                           15\nLockout observation window (minutes):                 15\nComputer role:                                        WORKSTATION\nThe command completed successfully."
+        },
+        "Failed Logins": {
+            "summary": {
+                "status": "REVIEW",
+                "message": "Failed login status could not be verified",
+                "score": 5
+            },
+            "raw": ""
+        }
+    }
+}
