@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T14:07:03</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T14:37:52</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 69/100</h2>
+        <h2>Overall Score: 64/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -189,6 +189,27 @@
             <td class="pass">PASS</td>
             <td>No custom share permissions found</td>
             <td>10/10</td>
+        </tr>
+        
+        <tr>
+            <td>LSA / Credential Guard</td>
+            <td class="review">REVIEW</td>
+            <td>LSA Protection is not enabled; Credential Guard does not appear to be running</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Defender ASR Rules</td>
+            <td class="fail">FAIL</td>
+            <td>No Defender ASR rules configured</td>
+            <td>0/10</td>
+        </tr>
+        
+        <tr>
+            <td>Listening Connections</td>
+            <td class="review">REVIEW</td>
+            <td>8 notable listening port(s): RPC port 135 listening on :: by svchost; RPC port 135 listening on 0.0.0.0 by svchost; NetBIOS port 139 listening on 10.10.3.38 by System; NetBIOS port 139 listening on 192.168.56.1 by System; NetBIOS port 139 listening on 10.10.3.18 by System; SMB port 445 listening on :: by System; RDP port 3389 listening on :: by svchost; RDP port 3389 listening on 0.0.0.0 by svchost</td>
+            <td>5/10</td>
         </tr>
         
         </table>
@@ -2858,6 +2879,366 @@ Account Logon
         
         <h3>Share Permissions</h3>
         <pre>No output returned</pre>
+        
+        <h3>LSA / Credential Guard</h3>
+        <pre>{
+    &quot;RunAsPPL&quot;:  2,
+    &quot;RunAsPPLBoot&quot;:  2,
+    &quot;SecurityServicesConfigured&quot;:  [
+                                       2
+                                   ],
+    &quot;SecurityServicesRunning&quot;:  [
+                                    2,
+                                    7
+                                ],
+    &quot;VirtualizationBasedSecurityStatus&quot;:  2
+}</pre>
+        
+        <h3>Defender ASR Rules</h3>
+        <pre>{
+    &quot;AttackSurfaceReductionRules_Ids&quot;:  null,
+    &quot;AttackSurfaceReductionRules_Actions&quot;:  null
+}</pre>
+        
+        <h3>Listening Connections</h3>
+        <pre>[
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  135,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  2036,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  135,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  2036,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;10.10.3.38&quot;,
+        &quot;LocalPort&quot;:  139,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;192.168.56.1&quot;,
+        &quot;LocalPort&quot;:  139,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;10.10.3.18&quot;,
+        &quot;LocalPort&quot;:  139,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  445,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  3389,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  10312,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  3389,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  10312,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  5040,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  5112,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  7680,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  13504,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  8090,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  22652,
+        &quot;ProcessName&quot;:  &quot;WsToastNotification&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Local\\Wondershare\\Wondershare NativePush\\WsToastNotification.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  9528,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  6316,
+        &quot;ProcessName&quot;:  &quot;GoodixSessionService&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\GoodixSessionService.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  19292,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4556,
+        &quot;ProcessName&quot;:  &quot;AdobeCollabSync&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AdobeCollabSync.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  27036,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  3012,
+        &quot;ProcessName&quot;:  &quot;steam&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  27060,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  3012,
+        &quot;ProcessName&quot;:  &quot;steam&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  28385,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  28390,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4,
+        &quot;ProcessName&quot;:  &quot;System&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  32683,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  11180,
+        &quot;ProcessName&quot;:  &quot;MSI.CentralServer&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Program Files (x86)\\MSI\\MSI Center\\MSI.CentralServer.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::1&quot;,
+        &quot;LocalPort&quot;:  42050,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  41380,
+        &quot;ProcessName&quot;:  &quot;OneDrive.Sync.Service&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDrive.Sync.Service.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  45134,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  5704,
+        &quot;ProcessName&quot;:  &quot;HPDrvExtSvc&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\hpdesx64.inf_amd64_dd7fd2090453955a\\HPDrvExtSvc.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  49350,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  28892,
+        &quot;ProcessName&quot;:  &quot;esrv_svc&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Program Files\\Intel\\SUR\\QUEENCREEK\\x64\\esrv_svc.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  49351,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  18632,
+        &quot;ProcessName&quot;:  &quot;esrv&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Program Files\\Intel\\SUR\\QUEENCREEK\\x64\\esrv.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49664,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1724,
+        &quot;ProcessName&quot;:  &quot;lsass&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49664,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1724,
+        &quot;ProcessName&quot;:  &quot;lsass&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49665,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1612,
+        &quot;ProcessName&quot;:  &quot;wininit&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49665,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1612,
+        &quot;ProcessName&quot;:  &quot;wininit&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49666,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  2600,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49666,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  2600,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49667,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4028,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49667,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  4028,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49671,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1724,
+        &quot;ProcessName&quot;:  &quot;lsass&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49671,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1724,
+        &quot;ProcessName&quot;:  &quot;lsass&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49691,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1688,
+        &quot;ProcessName&quot;:  &quot;services&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49691,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  1688,
+        &quot;ProcessName&quot;:  &quot;services&quot;,
+        &quot;ProcessPath&quot;:  null
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  49708,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  11844,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  49708,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  11844,
+        &quot;ProcessName&quot;:  &quot;svchost&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  51911,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  39260,
+        &quot;ProcessName&quot;:  &quot;GitHubDesktop&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Local\\GitHubDesktop\\app-3.5.12\\GitHubDesktop.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  54234,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  38120,
+        &quot;ProcessName&quot;:  &quot;Code&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;::&quot;,
+        &quot;LocalPort&quot;:  59751,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  32904,
+        &quot;ProcessName&quot;:  &quot;spoolsv&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\spoolsv.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;0.0.0.0&quot;,
+        &quot;LocalPort&quot;:  59751,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  32904,
+        &quot;ProcessName&quot;:  &quot;spoolsv&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\WINDOWS\\System32\\spoolsv.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  62278,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  3012,
+        &quot;ProcessName&quot;:  &quot;steam&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
+    },
+    {
+        &quot;LocalAddress&quot;:  &quot;127.0.0.1&quot;,
+        &quot;LocalPort&quot;:  62285,
+        &quot;State&quot;:  2,
+        &quot;OwningProcess&quot;:  3012,
+        &quot;ProcessName&quot;:  &quot;steam&quot;,
+        &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
+    }
+]</pre>
         
     </body>
     </html>
