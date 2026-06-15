@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T15:14:56</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T15:18:17</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 62/100</h2>
+        <h2>Overall Score: 64/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -166,7 +166,7 @@
         <tr>
             <td>Windows Services</td>
             <td class="review">REVIEW</td>
-            <td>61 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
+            <td>62 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
             <td>5/10</td>
         </tr>
         
@@ -228,9 +228,9 @@
         
         <tr>
             <td>Windows Update Age</td>
-            <td class="review">REVIEW</td>
-            <td>Could not calculate Windows Update age: Invalid isoformat string: &quot;{&#x27;value&#x27;: &#x27;/Date(1781067600000)/&#x27;, &#x27;Date&quot;</td>
-            <td>5/10</td>
+            <td class="pass">PASS</td>
+            <td>Last installed update KB5094135 was installed on 2026-06-10 (5 day(s) ago)</td>
+            <td>10/10</td>
         </tr>
         
         <tr>
@@ -2223,6 +2223,14 @@ Account Logon
         &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Microsoft GameInput\\x64\\GameInputRedistService.exe\&quot;&quot;
     },
     {
+        &quot;Name&quot;:  &quot;gpsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Group Policy Client&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k GPSvcGroup&quot;
+    },
+    {
         &quot;Name&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;DisplayName&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;State&quot;:  &quot;Running&quot;,
@@ -3278,10 +3286,8 @@ Account Logon
         <pre>{
     &quot;HotFixID&quot;:  &quot;KB5094135&quot;,
     &quot;Description&quot;:  &quot;Security Update&quot;,
-    &quot;InstalledOn&quot;:  {
-                        &quot;value&quot;:  &quot;\/Date(1781067600000)\/&quot;,
-                        &quot;DateTime&quot;:  &quot;Wednesday, June 10, 2026 12:00:00 AM&quot;
-                    }
+    &quot;InstalledOn&quot;:  &quot;2026-06-10&quot;,
+    &quot;AgeDays&quot;:  5
 }</pre>
         
         <h3>BitLocker All Volumes</h3>

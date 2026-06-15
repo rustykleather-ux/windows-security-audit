@@ -16,6 +16,33 @@ POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 REPORT_DIR = Path("audit_output")
 REPORT_DIR.mkdir(exist_ok=True)
 
+CHECK_WEIGHTS = {
+    "Firewall": 10,
+    "Microsoft Defender": 12,
+    "Defender Signatures": 8,
+    "BitLocker": 10,
+    "BitLocker All Volumes": 10,
+    "Windows Update": 10,
+    "Windows Update Age": 10,
+    "RDP": 8,
+    "SMB": 8,
+    "UAC": 8,
+    "Secure Boot / TPM": 10,
+    "Event Logging": 8,
+    "Installed Software": 5,
+    "Scheduled Tasks": 6,
+    "Autorun Registry Keys": 6,
+    "Startup Folders": 5,
+    "Windows Services": 7,
+    "Local Users": 7,
+    "Network Shares": 6,
+    "Share Permissions": 8,
+    "LSA / Credential Guard": 10,
+    "Defender ASR Rules": 10,
+    "Listening Connections": 7,
+    "PowerShell Security": 8,
+    "USB Storage": 5,
+}
 
 def is_admin():
     try:
@@ -414,6 +441,7 @@ def save_to_csv(data, filename):
         flat[f"{check_name}_status"] = check_data["summary"]["status"]
         flat[f"{check_name}_message"] = check_data["summary"]["message"]
         flat[f"{check_name}_score"] = check_data["summary"]["score"]
+        flat[f"{check_name}_weight"] = check_data["summary"]["weight"]
 
     with open(filename, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=flat.keys())
@@ -525,6 +553,7 @@ def save_to_html(data, filename):
             <td class="{css_class}">{status}</td>
             <td>{message}</td>
             <td>{score}/10</td>
+            <td>{check["summary"].get("weight", 5)}</td>
         </tr>
         """
 
@@ -603,6 +632,7 @@ def save_to_html(data, filename):
                 <th>Status</th>
                 <th>Message</th>
                 <th>Score</th>
+                <th>Weight</th>
             </tr>
             {rows}
         </table>
@@ -1641,23 +1671,32 @@ def main():
             "raw": raw,
         }
 
-    total_score = sum(check["summary"]["score"] for check in checks.values())
-    max_score = len(checks) * 10
-    overall_score = round((total_score / max_score) * 100)
+    weighted_score = 0
+max_weighted_score = 0
 
-    report = {
+for check_name, check_data in checks.items():
+    weight = CHECK_WEIGHTS.get(check_name, 5)
+    raw_score = check_data["summary"]["score"]
+
+    weighted_score += raw_score * weight
+    max_weighted_score += 10 * weight
+
+    check_data["summary"]["weight"] = weight
+
+overall_score = round((weighted_score / max_weighted_score) * 100)
+report = {
         "system": get_system_info(),
         "overall_score": overall_score,
         "checks": checks,
     }
 
-    save_to_json(report, REPORT_DIR / "audit_report.json")
-    save_to_csv(report, REPORT_DIR / "audit_results.csv")
-    save_to_html(report, REPORT_DIR / "audit_report.html")
+save_to_json(report, REPORT_DIR / "audit_report.json")
+save_to_csv(report, REPORT_DIR / "audit_results.csv")
+save_to_html(report, REPORT_DIR / "audit_report.html")
 
-    print("Audit complete.")
-    print(f"Overall score: {overall_score}/100")
-    print(f"Reports saved in: {REPORT_DIR.resolve()}")
+print("Audit complete.")
+print(f"Overall score: {overall_score}/100")
+print(f"Reports saved in: {REPORT_DIR.resolve()}")
 
 
 if __name__ == "__main__":
