@@ -1501,9 +1501,18 @@ def audit_usb_storage():
 def audit_windows_update_age():
     command = (
         "$hotfix = Get-HotFix | "
+        "Where-Object { $_.InstalledOn } | "
         "Sort-Object InstalledOn -Descending | "
         "Select-Object -First 1 HotFixID, Description, InstalledOn; "
-        "$hotfix | ConvertTo-Json -Depth 4"
+        "$ageDays = if ($hotfix.InstalledOn) { "
+        "(New-TimeSpan -Start $hotfix.InstalledOn -End (Get-Date)).Days "
+        "} else { $null }; "
+        "[PSCustomObject]@{ "
+        "HotFixID = $hotfix.HotFixID; "
+        "Description = $hotfix.Description; "
+        "InstalledOn = $hotfix.InstalledOn.ToString('yyyy-MM-dd'); "
+        "AgeDays = $ageDays "
+        "} | ConvertTo-Json -Depth 4"
     )
 
     result = run_powershell(command, timeout=60)
@@ -1516,37 +1525,36 @@ def audit_windows_update_age():
             5
         ), result["stdout"]
 
-    try:
-        installed_on = datetime.fromisoformat(str(data.get("InstalledOn")).split("T")[0])
-        age_days = (datetime.now() - installed_on).days
-        hotfix_id = data.get("HotFixID", "Unknown")
+    age_days = data.get("AgeDays")
+    hotfix_id = data.get("HotFixID", "Unknown")
+    installed_on = data.get("InstalledOn", "Unknown")
 
-        if age_days <= 30:
-            return check_result(
-                "PASS",
-                f"Last installed update {hotfix_id} was {age_days} day(s) ago",
-                10
-            ), result["stdout"]
-
-        if age_days <= 60:
-            return check_result(
-                "REVIEW",
-                f"Last installed update {hotfix_id} was {age_days} day(s) ago",
-                6
-            ), result["stdout"]
-
-        return check_result(
-            "FAIL",
-            f"Last installed update {hotfix_id} was {age_days} day(s) ago",
-            0
-        ), result["stdout"]
-
-    except Exception as e:
+    if age_days is None:
         return check_result(
             "REVIEW",
-            f"Could not calculate Windows Update age: {e}",
+            "Windows Update age could not be calculated",
             5
         ), result["stdout"]
+
+    if age_days <= 30:
+        return check_result(
+            "PASS",
+            f"Last installed update {hotfix_id} was installed on {installed_on} ({age_days} day(s) ago)",
+            10
+        ), result["stdout"]
+
+    if age_days <= 60:
+        return check_result(
+            "REVIEW",
+            f"Last installed update {hotfix_id} was installed on {installed_on} ({age_days} day(s) ago)",
+            6
+        ), result["stdout"]
+
+    return check_result(
+        "FAIL",
+        f"Last installed update {hotfix_id} was installed on {installed_on} ({age_days} day(s) ago)",
+        0
+    ), result["stdout"]
 
 def audit_bitlocker_all_volumes():
     command = (

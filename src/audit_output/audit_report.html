@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T14:37:52</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T15:14:56</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 64/100</h2>
+        <h2>Overall Score: 62/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -166,7 +166,7 @@
         <tr>
             <td>Windows Services</td>
             <td class="review">REVIEW</td>
-            <td>62 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
+            <td>61 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
             <td>5/10</td>
         </tr>
         
@@ -209,6 +209,34 @@
             <td>Listening Connections</td>
             <td class="review">REVIEW</td>
             <td>8 notable listening port(s): RPC port 135 listening on :: by svchost; RPC port 135 listening on 0.0.0.0 by svchost; NetBIOS port 139 listening on 10.10.3.38 by System; NetBIOS port 139 listening on 192.168.56.1 by System; NetBIOS port 139 listening on 10.10.3.18 by System; SMB port 445 listening on :: by System; RDP port 3389 listening on :: by svchost; RDP port 3389 listening on 0.0.0.0 by svchost</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>PowerShell Security</td>
+            <td class="review">REVIEW</td>
+            <td>Script Block Logging is not enabled; Module Logging is not enabled; PowerShell Transcription is not enabled</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>USB Storage</td>
+            <td class="review">REVIEW</td>
+            <td>USB mass storage is enabled; No removable storage restriction policy detected</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Windows Update Age</td>
+            <td class="review">REVIEW</td>
+            <td>Could not calculate Windows Update age: Invalid isoformat string: &quot;{&#x27;value&#x27;: &#x27;/Date(1781067600000)/&#x27;, &#x27;Date&quot;</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>BitLocker All Volumes</td>
+            <td class="review">REVIEW</td>
+            <td>C: protection is 0; C: encryption is 0%; D: protection is 0; D: encryption is 0%</td>
             <td>5/10</td>
         </tr>
         
@@ -2195,14 +2223,6 @@ Account Logon
         &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Microsoft GameInput\\x64\\GameInputRedistService.exe\&quot;&quot;
     },
     {
-        &quot;Name&quot;:  &quot;gpsvc&quot;,
-        &quot;DisplayName&quot;:  &quot;Group Policy Client&quot;,
-        &quot;State&quot;:  &quot;Running&quot;,
-        &quot;StartMode&quot;:  &quot;Auto&quot;,
-        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
-        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k GPSvcGroup&quot;
-    },
-    {
         &quot;Name&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;DisplayName&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;State&quot;:  &quot;Running&quot;,
@@ -3237,6 +3257,50 @@ Account Logon
         &quot;OwningProcess&quot;:  3012,
         &quot;ProcessName&quot;:  &quot;steam&quot;,
         &quot;ProcessPath&quot;:  &quot;C:\\Users\\rfolsom\\Steam\\steam.exe&quot;
+    }
+]</pre>
+        
+        <h3>PowerShell Security</h3>
+        <pre>{
+    &quot;ScriptBlockLogging&quot;:  null,
+    &quot;ModuleLogging&quot;:  null,
+    &quot;Transcription&quot;:  null,
+    &quot;PowerShellV2State&quot;:  null
+}</pre>
+        
+        <h3>USB Storage</h3>
+        <pre>{
+    &quot;USBSTORStart&quot;:  3,
+    &quot;RemovableStoragePolicyExists&quot;:  false
+}</pre>
+        
+        <h3>Windows Update Age</h3>
+        <pre>{
+    &quot;HotFixID&quot;:  &quot;KB5094135&quot;,
+    &quot;Description&quot;:  &quot;Security Update&quot;,
+    &quot;InstalledOn&quot;:  {
+                        &quot;value&quot;:  &quot;\/Date(1781067600000)\/&quot;,
+                        &quot;DateTime&quot;:  &quot;Wednesday, June 10, 2026 12:00:00 AM&quot;
+                    }
+}</pre>
+        
+        <h3>BitLocker All Volumes</h3>
+        <pre>[
+    {
+        &quot;MountPoint&quot;:  &quot;C:&quot;,
+        &quot;VolumeStatus&quot;:  0,
+        &quot;ProtectionStatus&quot;:  0,
+        &quot;EncryptionPercentage&quot;:  0,
+        &quot;EncryptionMethod&quot;:  0,
+        &quot;LockStatus&quot;:  0
+    },
+    {
+        &quot;MountPoint&quot;:  &quot;D:&quot;,
+        &quot;VolumeStatus&quot;:  0,
+        &quot;ProtectionStatus&quot;:  0,
+        &quot;EncryptionPercentage&quot;:  0,
+        &quot;EncryptionMethod&quot;:  0,
+        &quot;LockStatus&quot;:  0
     }
 ]</pre>
         
