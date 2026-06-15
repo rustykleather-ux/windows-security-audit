@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T13:59:06</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T14:07:03</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 65/100</h2>
+        <h2>Overall Score: 69/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -166,8 +166,29 @@
         <tr>
             <td>Windows Services</td>
             <td class="review">REVIEW</td>
-            <td>61 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
+            <td>62 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
             <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Local Users</td>
+            <td class="review">REVIEW</td>
+            <td>lbladmin does not require a password</td>
+            <td>6/10</td>
+        </tr>
+        
+        <tr>
+            <td>Network Shares</td>
+            <td class="pass">PASS</td>
+            <td>No non-default SMB network shares found</td>
+            <td>10/10</td>
+        </tr>
+        
+        <tr>
+            <td>Share Permissions</td>
+            <td class="pass">PASS</td>
+            <td>No custom share permissions found</td>
+            <td>10/10</td>
         </tr>
         
         </table>
@@ -2153,6 +2174,14 @@ Account Logon
         &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Microsoft GameInput\\x64\\GameInputRedistService.exe\&quot;&quot;
     },
     {
+        &quot;Name&quot;:  &quot;gpsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Group Policy Client&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k GPSvcGroup&quot;
+    },
+    {
         &quot;Name&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;DisplayName&quot;:  &quot;HPDrvExtSvc&quot;,
         &quot;State&quot;:  &quot;Running&quot;,
@@ -2753,6 +2782,82 @@ Account Logon
         &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_37.114.10001.0_x64__8wekyb3d8bbwe\\GamingServices.exe\&quot;&quot;
     }
 ]</pre>
+        
+        <h3>Local Users</h3>
+        <pre>[
+    {
+        &quot;Name&quot;:  &quot;Administrator&quot;,
+        &quot;Enabled&quot;:  false,
+        &quot;LastLogon&quot;:  &quot;\/Date(1720235776055)\/&quot;,
+        &quot;PasswordRequired&quot;:  true,
+        &quot;PasswordLastSet&quot;:  null,
+        &quot;UserMayChangePassword&quot;:  true,
+        &quot;PasswordExpires&quot;:  null,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;Built-in account for administering the computer/domain&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DefaultAccount&quot;,
+        &quot;Enabled&quot;:  false,
+        &quot;LastLogon&quot;:  null,
+        &quot;PasswordRequired&quot;:  false,
+        &quot;PasswordLastSet&quot;:  null,
+        &quot;UserMayChangePassword&quot;:  true,
+        &quot;PasswordExpires&quot;:  null,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;A user account managed by the system.&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Guest&quot;,
+        &quot;Enabled&quot;:  false,
+        &quot;LastLogon&quot;:  null,
+        &quot;PasswordRequired&quot;:  false,
+        &quot;PasswordLastSet&quot;:  null,
+        &quot;UserMayChangePassword&quot;:  false,
+        &quot;PasswordExpires&quot;:  null,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;Built-in account for guest access to the computer/domain&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;lbladmin&quot;,
+        &quot;Enabled&quot;:  true,
+        &quot;LastLogon&quot;:  &quot;\/Date(1740515657148)\/&quot;,
+        &quot;PasswordRequired&quot;:  false,
+        &quot;PasswordLastSet&quot;:  &quot;\/Date(1740513506472)\/&quot;,
+        &quot;UserMayChangePassword&quot;:  true,
+        &quot;PasswordExpires&quot;:  null,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;LogMeInRemoteUser&quot;,
+        &quot;Enabled&quot;:  true,
+        &quot;LastLogon&quot;:  &quot;\/Date(1771865366297)\/&quot;,
+        &quot;PasswordRequired&quot;:  true,
+        &quot;PasswordLastSet&quot;:  &quot;\/Date(1771865335898)\/&quot;,
+        &quot;UserMayChangePassword&quot;:  true,
+        &quot;PasswordExpires&quot;:  null,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;Account for remote control&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WDAGUtilityAccount&quot;,
+        &quot;Enabled&quot;:  false,
+        &quot;LastLogon&quot;:  null,
+        &quot;PasswordRequired&quot;:  true,
+        &quot;PasswordLastSet&quot;:  &quot;\/Date(1710948468239)\/&quot;,
+        &quot;UserMayChangePassword&quot;:  true,
+        &quot;PasswordExpires&quot;:  &quot;\/Date(1716132468239)\/&quot;,
+        &quot;AccountExpires&quot;:  null,
+        &quot;Description&quot;:  &quot;A user account managed and used by the system for Windows Defender Application Guard scenarios.&quot;
+    }
+]</pre>
+        
+        <h3>Network Shares</h3>
+        <pre>No output returned</pre>
+        
+        <h3>Share Permissions</h3>
+        <pre>No output returned</pre>
         
     </body>
     </html>

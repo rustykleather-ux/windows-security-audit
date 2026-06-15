@@ -1046,6 +1046,192 @@ def audit_windows_services():
         5
     ), result["stdout"]
 
+def audit_local_users():
+    command = (
+        "$users = Get-LocalUser | "
+        "Select-Object Name, Enabled, LastLogon, PasswordRequired, "
+        "PasswordLastSet, UserMayChangePassword, PasswordExpires, "
+        "AccountExpires, Description; "
+        "$users | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Local user accounts could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    issues = []
+
+    for user in data:
+        name = str(user.get("Name", ""))
+        enabled = user.get("Enabled")
+        password_required = user.get("PasswordRequired")
+
+        if name.lower() == "guest" and enabled:
+            issues.append("Guest account is enabled")
+
+        if enabled and password_required is False:
+            issues.append(f"{name} does not require a password")
+
+        if enabled and name.lower() in ["administrator", "admin", "test", "temp"]:
+            issues.append(f"Review enabled local account: {name}")
+
+    if not issues:
+        return check_result(
+            "PASS",
+            f"{len(data)} local user account(s) reviewed; no obvious issues found",
+            10
+        ), result["stdout"]
+
+    if "Guest account is enabled" in issues:
+        return check_result(
+            "FAIL",
+            "; ".join(issues[:10]),
+            2
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        "; ".join(issues[:10]),
+        6
+    ), result["stdout"]
+
+def audit_network_shares():
+    command = (
+        "$shares = Get-SmbShare | "
+        "Where-Object { $_.Name -notin @('ADMIN$', 'C$', 'IPC$', 'print$') } | "
+        "Select-Object Name, Path, Description, ShareState, FolderEnumerationMode, "
+        "CachingMode, ContinuouslyAvailable, EncryptData; "
+        "$shares | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "PASS",
+            "No non-default SMB network shares found",
+            10
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    issues = []
+
+    for share in data:
+        name = str(share.get("Name", ""))
+        path = str(share.get("Path", ""))
+        encrypt_data = share.get("EncryptData")
+
+        if encrypt_data is not True:
+            issues.append(f"{name} does not require SMB encryption")
+
+        if path.lower().startswith("c:\\users"):
+            issues.append(f"{name} points to a user profile path")
+
+        if path.lower().startswith("c:\\"):
+            issues.append(f"Review local drive share: {name} -> {path}")
+
+    if not issues:
+        return check_result(
+            "PASS",
+            f"{len(data)} non-default network share(s) reviewed; no obvious issues found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(data)} non-default share(s) found: " + "; ".join(issues[:10]),
+        5
+    ), result["stdout"]
+
+def audit_share_permissions():
+    command = (
+        "$shares = Get-SmbShare | "
+        "Where-Object { $_.Name -notin @('ADMIN$', 'C$', 'IPC$', 'print$') }; "
+        "$results = foreach ($share in $shares) { "
+        "Get-SmbShareAccess -Name $share.Name | "
+        "Select-Object "
+        "@{Name='Share';Expression={$share.Name}}, "
+        "AccountName, AccessControlType, AccessRight "
+        "}; "
+        "$results | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "PASS",
+            "No custom share permissions found",
+            10
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    critical_accounts = [
+        "Everyone",
+        "Guest",
+        "Guests",
+        "ANONYMOUS LOGON"
+    ]
+
+    review_accounts = [
+        "Authenticated Users"
+    ]
+
+    warnings = []
+    critical = []
+
+    for permission in data:
+        account = str(permission.get("AccountName", ""))
+        share = str(permission.get("Share", ""))
+        access = str(permission.get("AccessRight", ""))
+
+        if account in critical_accounts:
+            if access.lower() in ["full", "change"]:
+                critical.append(f"{share}: {account} has {access} access")
+            else:
+                warnings.append(f"{share}: {account} has {access} access")
+
+        if account in review_accounts:
+            if access.lower() == "full":
+                critical.append(f"{share}: {account} has Full access")
+            else:
+                warnings.append(f"{share}: {account} has {access} access")
+
+    if critical:
+        return check_result(
+            "FAIL",
+            "; ".join(critical[:10]),
+            0
+        ), result["stdout"]
+
+    if warnings:
+        return check_result(
+            "REVIEW",
+            "; ".join(warnings[:10]),
+            5
+        ), result["stdout"]
+
+    return check_result(
+        "PASS",
+        "No risky share permissions detected",
+        10
+    ), result["stdout"]
+
 def main():
     checks = {}
 
@@ -1065,6 +1251,9 @@ def main():
         "Autorun Registry Keys": audit_autoruns_registry,
         "Startup Folders": audit_startup_folders,
         "Windows Services": audit_windows_services,
+        "Local Users": audit_local_users,
+        "Network Shares": audit_network_shares,
+        "Share Permissions": audit_share_permissions,
 }
 
     for name, function in audit_functions.items():
