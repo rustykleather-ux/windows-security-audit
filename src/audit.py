@@ -7,6 +7,11 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+# Constants
+POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+
+
 
 REPORT_DIR = Path("audit_output")
 REPORT_DIR.mkdir(exist_ok=True)
@@ -17,6 +22,47 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin() != 0
     except Exception:
         return False
+
+def audit_event_logging():
+    result = run_powershell(
+        "auditpol /get /category:*"
+    )
+
+    output = result["stdout"]
+
+    if not output:
+        return check_result(
+            "REVIEW",
+            "Audit policy could not be verified",
+            5
+        ), output
+
+    important_categories = [
+        "Logon",
+        "Account Logon",
+        "Account Management",
+        "Policy Change",
+        "Privilege Use"
+    ]
+
+    missing = []
+
+    for category in important_categories:
+        if category not in output:
+            missing.append(category)
+
+    if not missing:
+        return check_result(
+            "PASS",
+            "Critical audit categories detected",
+            10
+        ), output
+
+    return check_result(
+        "REVIEW",
+        f"Could not verify: {', '.join(missing)}",
+        6
+    ), output
 
 def audit_windows_update():
     command = (
@@ -55,18 +101,18 @@ def run_powershell(command, timeout=30):
     try:
         result = subprocess.run(
             [
-                "powershell",
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-Command",
-                command,
+               POWERSHELL,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+             command,
             ],
             capture_output=True,
             text=True,
             timeout=timeout,
         )
-
+        
         stdout = result.stdout.strip()
         stderr = result.stderr.strip()
 
@@ -374,6 +420,95 @@ def save_to_csv(data, filename):
         writer.writeheader()
         writer.writerow(flat)
 
+def audit_uac():
+    command = (
+        "$uac = Get-ItemProperty "
+        "-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System'; "
+        "[PSCustomObject]@{ "
+        "EnableLUA = $uac.EnableLUA; "
+        "ConsentPromptBehaviorAdmin = $uac.ConsentPromptBehaviorAdmin; "
+        "PromptOnSecureDesktop = $uac.PromptOnSecureDesktop; "
+        "FilterAdministratorToken = $uac.FilterAdministratorToken "
+        "} | ConvertTo-Json"
+    )
+
+    result = run_powershell(command)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "UAC status could not be verified", 5), result["stdout"]
+
+    issues = []
+
+    if data.get("EnableLUA") != 1:
+        issues.append("UAC is disabled")
+
+    if data.get("ConsentPromptBehaviorAdmin") == 0:
+        issues.append("Admin elevation prompts are disabled")
+
+    if data.get("PromptOnSecureDesktop") != 1:
+        issues.append("Secure desktop prompt is disabled")
+
+    if not issues:
+        return check_result("PASS", "UAC is enabled with secure elevation prompts", 10), result["stdout"]
+
+    if "UAC is disabled" in issues:
+        return check_result("FAIL", "; ".join(issues), 0), result["stdout"]
+
+    return check_result("REVIEW", "; ".join(issues), 6), result["stdout"]
+def audit_secure_boot_tpm():
+    command = (
+        "$secureBoot = $false; "
+        "try { $secureBoot = Confirm-SecureBootUEFI } catch {} "
+        "$tpm = Get-Tpm; "
+        "[PSCustomObject]@{ "
+        "SecureBootEnabled = $secureBoot; "
+        "TpmPresent = $tpm.TpmPresent; "
+        "TpmReady = $tpm.TpmReady; "
+        "TpmEnabled = $tpm.TpmEnabled; "
+        "} | ConvertTo-Json"
+    )
+
+    result = run_powershell(command)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Secure Boot / TPM status could not be verified",
+            5
+        ), result["stdout"]
+
+    issues = []
+
+    if not data.get("SecureBootEnabled"):
+        issues.append("Secure Boot disabled")
+
+    if not data.get("TpmPresent"):
+        issues.append("TPM not present")
+
+    if data.get("TpmPresent") and not data.get("TpmReady"):
+        issues.append("TPM not ready")
+
+    if not issues:
+        return check_result(
+            "PASS",
+            "Secure Boot enabled and TPM ready",
+            10
+        ), result["stdout"]
+
+    if "TPM not present" in issues:
+        return check_result(
+            "FAIL",
+            "; ".join(issues),
+            0
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        "; ".join(issues),
+        5
+    ), result["stdout"]
 
 def save_to_html(data, filename):
     rows = ""
@@ -481,6 +616,130 @@ def save_to_html(data, filename):
     with open(filename, "w", encoding="utf-8") as file:
         file.write(report)
 
+def audit_defender_signatures():
+    result = run_powershell(
+        "Get-MpComputerStatus | "
+        "Select-Object "
+        "AntivirusSignatureLastUpdated,"
+        "AMEngineVersion,"
+        "AMProductVersion,"
+        "QuickScanAge,"
+        "FullScanAge | ConvertTo-Json"
+    )
+
+    data = parse_json_output(result)
+    
+
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Defender signature status could not be verified",
+            5
+        ), result["stdout"]
+
+    try:
+        sig_date = datetime.fromisoformat(
+            data["AntivirusSignatureLastUpdated"].replace("Z", "")
+        )
+
+        age_days = (datetime.now() - sig_date).days
+
+        full_scan_age = data.get("FullScanAge", "Unknown")
+
+        if age_days <= 3:
+            return check_result(
+                "PASS",
+                f"Signatures are {age_days} day(s) old. Full scan age: {full_scan_age} day(s).",
+                10
+            ), result["stdout"]
+
+        if age_days <= 7:
+            return check_result(
+                "REVIEW",
+                f"Signatures are {age_days} day(s) old. Consider updating.",
+                6
+            ), result["stdout"]
+
+        return check_result(
+            "FAIL",
+            f"Signatures are {age_days} day(s) old.",
+            0
+        ), result["stdout"]
+
+    except Exception as e:
+        return check_result(
+            "REVIEW",
+            f"Could not calculate signature age: {e}",
+            5
+        ), result["stdout"]
+
+def audit_installed_software():
+    command = (
+        "$paths = @("
+        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',"
+        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'"
+        "); "
+        "$apps = Get-ItemProperty $paths -ErrorAction SilentlyContinue | "
+        "Where-Object { $_.DisplayName } | "
+        "Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | "
+        "Sort-Object DisplayName; "
+        "$apps | ConvertTo-Json -Depth 3"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Installed software inventory could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    risky_keywords = [
+        "teamviewer",
+        "anydesk",
+        "vnc",
+        "ultravnc",
+        "tightvnc",
+        "logmein",
+        "screenconnect",
+        "connectwise",
+        "splashtop",
+        "java",
+        "utorrent",
+        "bittorrent",
+        "wireshark",
+        "nmap"
+    ]
+
+    flagged = []
+
+    for app in data:
+        name = str(app.get("DisplayName", "")).lower()
+
+        for keyword in risky_keywords:
+            if keyword in name:
+                flagged.append(app.get("DisplayName"))
+                break
+
+    if not flagged:
+        return check_result(
+            "PASS",
+            f"{len(data)} installed application(s) reviewed; no risky software keywords found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(flagged)} potentially risky application(s) found: {', '.join(flagged[:10])}",
+        5
+    ), result["stdout"]
 
 def main():
     checks = {}
@@ -488,14 +747,16 @@ def main():
     audit_functions = {
         "Firewall": audit_firewall,
         "Microsoft Defender": audit_defender,
-        "Local Administrators": audit_local_admins,
+        "Defender Signatures": audit_defender_signatures,
         "BitLocker": audit_bitlocker,
-        "Password Policy": audit_password_policy,
-        "Failed Logins": audit_failed_logins,
         "Windows Update": audit_windows_update,
+        "Installed Software": audit_installed_software,
         "RDP": audit_rdp,
         "SMB": audit_smb,
-    }
+        "UAC": audit_uac,
+        "Secure Boot / TPM": audit_secure_boot_tpm,
+        "Event Logging": audit_event_logging,
+}
 
     for name, function in audit_functions.items():
         summary, raw = function()
