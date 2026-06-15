@@ -740,6 +740,229 @@ def audit_installed_software():
         f"{len(flagged)} potentially risky application(s) found: {', '.join(flagged[:10])}",
         5
     ), result["stdout"]
+def audit_scheduled_tasks():
+    command = (
+        "$tasks = Get-ScheduledTask | "
+        "Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' } | "
+        "Select-Object TaskName, TaskPath, State, Author, "
+        "@{Name='Execute';Expression={$_.Actions.Execute}}, "
+        "@{Name='Arguments';Expression={$_.Actions.Arguments}}; "
+        "$tasks | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Scheduled tasks could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_keywords = [
+        "powershell",
+        "cmd.exe",
+        "wscript",
+        "cscript",
+        "mshta",
+        "rundll32",
+        "regsvr32",
+        "bitsadmin",
+        "certutil",
+        "appdata",
+        "temp",
+        "public",
+        "downloads"
+    ]
+
+    flagged = []
+
+    for task in data:
+        combined = " ".join([
+            str(task.get("TaskName", "")),
+            str(task.get("TaskPath", "")),
+            str(task.get("Author", "")),
+            str(task.get("Execute", "")),
+            str(task.get("Arguments", "")),
+        ]).lower()
+
+        for keyword in suspicious_keywords:
+            if keyword in combined:
+                flagged.append(
+                    f"{task.get('TaskPath', '')}{task.get('TaskName', '')}"
+                )
+                break
+
+    if not flagged:
+        return check_result(
+            "PASS",
+            f"{len(data)} non-Microsoft scheduled task(s) reviewed; no suspicious keywords found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(flagged)} suspicious scheduled task(s) found: {', '.join(flagged[:10])}",
+        5
+    ), result["stdout"]
+
+def audit_startup_folders():
+    command = (
+        "$paths = @("
+        "[Environment]::GetFolderPath('Startup'),"
+        "[Environment]::GetFolderPath('CommonStartup')"
+        "); "
+        "$items = foreach ($path in $paths) { "
+        "if (Test-Path $path) { "
+        "Get-ChildItem -Path $path -Force -ErrorAction SilentlyContinue | "
+        "Select-Object @{Name='StartupPath';Expression={$path}}, "
+        "Name, FullName, Extension, Length, LastWriteTime "
+        "} "
+        "}; "
+        "$items | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "PASS",
+            "No startup folder items found",
+            10
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_extensions = [
+        ".ps1",
+        ".vbs",
+        ".js",
+        ".jse",
+        ".wsf",
+        ".bat",
+        ".cmd",
+        ".scr",
+        ".hta",
+        ".lnk",
+        ".exe"
+    ]
+
+    flagged = []
+
+    for item in data:
+        extension = str(item.get("Extension", "")).lower()
+        full_name = str(item.get("FullName", "")).lower()
+
+        if extension in suspicious_extensions:
+            flagged.append(item.get("FullName"))
+            continue
+
+        if "appdata" in full_name or "temp" in full_name:
+            flagged.append(item.get("FullName"))
+
+    if not flagged:
+        return check_result(
+            "PASS",
+            f"{len(data)} startup folder item(s) reviewed; no suspicious items found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(flagged)} suspicious startup folder item(s) found: {', '.join(flagged[:10])}",
+        5
+    ), result["stdout"]
+
+def audit_autoruns_registry():
+    command = (
+        "$paths = @("
+        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',"
+        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce',"
+        "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',"
+        "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce',"
+        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run',"
+        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce'"
+        "); "
+        "$items = foreach ($path in $paths) { "
+        "if (Test-Path $path) { "
+        "$props = Get-ItemProperty -Path $path; "
+        "$props.PSObject.Properties | "
+        "Where-Object { $_.Name -notlike 'PS*' } | "
+        "Select-Object @{Name='RegistryPath';Expression={$path}}, Name, Value "
+        "} "
+        "}; "
+        "$items | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "PASS",
+            f"{len(flagged)} suspicious autorun entry/entries found: {', '.join(flagged[:10])}",
+                    ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_keywords = [
+        "powershell",
+        "cmd.exe",
+        "wscript",
+        "cscript",
+        "mshta",
+        "rundll32",
+        "regsvr32",
+        "bitsadmin",
+        "certutil",
+        "appdata",
+        "temp",
+        "public",
+        "downloads",
+        "startup",
+        ".ps1",
+        ".vbs",
+        ".js",
+        ".bat",
+        ".cmd",
+        ".scr"
+    ]
+
+    flagged = []
+
+    for item in data:
+        combined = " ".join([
+            str(item.get("RegistryPath", "")),
+            str(item.get("Name", "")),
+            str(item.get("Value", "")),
+        ]).lower()
+
+        for keyword in suspicious_keywords:
+            if keyword in combined:
+                flagged.append(
+                    f"{item.get('RegistryPath')}\\{item.get('Name')}"
+                )
+                break
+
+    if not flagged:
+        return check_result(
+            "PASS",
+            f"{len(data)} autorun registry entrie(s) reviewed; no suspicious keywords found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(flagged)} suspicious autorun entrie(s) found: {', '.join(flagged[:10])}",
+        5
+    ), result["stdout"]
 
 def main():
     checks = {}
@@ -756,6 +979,9 @@ def main():
         "UAC": audit_uac,
         "Secure Boot / TPM": audit_secure_boot_tpm,
         "Event Logging": audit_event_logging,
+        "Scheduled Tasks": audit_scheduled_tasks,
+        "Autorun Registry Keys": audit_autoruns_registry,
+        "Startup Folders": audit_startup_folders,
 }
 
     for name, function in audit_functions.items():

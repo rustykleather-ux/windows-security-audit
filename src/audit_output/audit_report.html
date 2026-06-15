@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T13:35:39</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T13:46:17</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 71/100</h2>
+        <h2>Overall Score: 68/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -140,6 +140,20 @@
             <td class="pass">PASS</td>
             <td>Critical audit categories detected</td>
             <td>10/10</td>
+        </tr>
+        
+        <tr>
+            <td>Scheduled Tasks</td>
+            <td class="review">REVIEW</td>
+            <td>3 suspicious scheduled task(s) found: \OneDC_Updater, \USER_ESRV_SVC_QUEENCREEK, \ZoomUpdateTaskUser-S-1-5-21-1865810128-1616563830-3526441106-1142</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Autorun Registry Keys</td>
+            <td class="review">REVIEW</td>
+            <td>7 suspicious autorun entrie(s) found: HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MsiTrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MSI TrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Update Binary, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Standalone Update Binary, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\AVGBrowserAutoLaunch_CB5378451B0DF0CF2210DAD8F3D219E1, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\Teams, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\MicrosoftEdgeAutoLaunch_1ADB402EF54FBC975846E942A70290D6</td>
+            <td>5/10</td>
         </tr>
         
         </table>
@@ -1396,6 +1410,463 @@ Account Logon
   Kerberos Authentication Service         Success and Failure
 
   Credential Validation                   Success and Failure</pre>
+        
+        <h3>Scheduled Tasks</h3>
+        <pre>[
+    {
+        &quot;TaskName&quot;:  &quot;Adobe Acrobat Update Task&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Adobe Systems Incorporated&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\Common Files\\Adobe\\ARM\\1.0\\AdobeARM.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;Adobe-Genuine-Software-Integrity-Scheduler-1.0&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Adobe Systems Inc.&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\Common Files\\Adobe\\AdobeGCClient\\AGSService.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AdobeGCInvoker-1.0&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Adobe Systems Inc.&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\Common Files\\Adobe\\AdobeGCClient\\AGCInvokerUtility.exe&quot;,
+        &quot;Arguments&quot;:  &quot;-mode=scheduled&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVG Secure Browser Heartbeat Task (Hourly)&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;S-1-5-18&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\AVG\\Browser\\Application\\AVGBrowser.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--type=heartbeat --hourly&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVG Secure Browser Heartbeat Task (Logon)&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;S-1-5-18&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\AVG\\Browser\\Application\\AVGBrowser.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--type=heartbeat --logon&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVG Secure Browser VPS Differential Update&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;LBL\\LL-IT$&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\AVG\\Browser\\Application\\vps_helper.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--vps-update&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVGBrowserProtectS-1-5-21-1865810128-1616563830-3526441106-1142&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;LBL\\rfolsom&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\AVG\\Browser\\Application\\AVGBrowserProtect.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--runonce&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVGUpdateTaskMachineCore&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\AVG\\Browser\\Update\\AVGBrowserUpdate.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/c&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;AVGUpdateTaskMachineUA&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\AVG\\Browser\\Update\\AVGBrowserUpdate.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/ua /installsource scheduler&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;CreateExplorerShellUnelevatedTask&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;ExplorerShellUnelevated&quot;,
+        &quot;Execute&quot;:  &quot;C:\\WINDOWS\\Explorer.EXE&quot;,
+        &quot;Arguments&quot;:  &quot;/NoUACCheck&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;Git for Windows Updater&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;\&quot;C:\\Program Files\\Git\\git-bash.exe\&quot;&quot;,
+        &quot;Arguments&quot;:  &quot;--hide --no-needs-console --command=cmd\\git.exe update-git-for-windows --quiet --gui&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;iGoAudioTask&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  4,
+        &quot;Author&quot;:  &quot;Intelligo Technology Inc.&quot;,
+        &quot;Execute&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\igoaudioservice.inf_amd64_8845dc9a09980cb8\\iGoSwServer.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--apo&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;iGoAudioTaskSession&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  4,
+        &quot;Author&quot;:  &quot;Intelligo Technology Inc.&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Windows\\System32\\DriverStore\\FileRepository\\igoaudioservice.inf_amd64_8845dc9a09980cb8\\iGoSwServer.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--apo --server=session_monitor&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;MicrosoftEdgeUpdateTaskMachineCore&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/c&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;MicrosoftEdgeUpdateTaskMachineUA&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/ua /installsource scheduler&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;npcapwatchdog&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Npcap\\CheckStatus.bat&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvDriverUpdateCheckDaily_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\NVIDIA Corporation\\NvContainer\\nvcontainer.exe&quot;,
+        &quot;Arguments&quot;:  &quot;-d \&quot;C:\\Program Files\\NVIDIA Corporation\\NvDriverUpdateCheck\&quot; -l 3 -f C:\\ProgramData\\NVIDIA\\NvContainerDriverUpdateCheck.log&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NVIDIA GeForce Experience SelfUpdate_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;\&quot;C:\\Program Files\\NVIDIA Corporation\\NVIDIA GeForce Experience\\NVIDIA GeForce Experience.exe\&quot;&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvNodeLauncher_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\NVIDIA Corporation\\NvNode\\nvnodejslauncher.exe&quot;,
+        &quot;Arguments&quot;:  &quot;--launcher=TaskScheduler&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvTmRep_CrashReport1_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\NVIDIA Corporation\\NvBackend\\NvTmRep.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvTmRep_CrashReport2_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\NVIDIA Corporation\\NvBackend\\NvTmRep.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvTmRep_CrashReport3_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\NVIDIA Corporation\\NvBackend\\NvTmRep.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;NvTmRep_CrashReport4_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NVIDIA Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\NVIDIA Corporation\\NvBackend\\NvTmRep.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OmApSvcBroker&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  4,
+        &quot;Author&quot;:  &quot;MSI&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files (x86)\\MSI\\MSI NBFoundation Service\\OmApSvcBroker.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDC_Updater&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;MSI&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Users\\lbladmin\\Documents\\temp\\OneDC_Updater\\OneDC_Updater.exe&quot;,
+        &quot;Arguments&quot;:  &quot;OneDragonCenter&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Per-Machine Standalone Update Task&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\OneDriveStandaloneUpdater.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Reporting Task-S-1-5-21-1865810128-1616563830-3526441106-1142&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\OneDriveStandaloneUpdater.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/reporting&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Reporting Task-S-1-5-21-1865810128-1616563830-3526441106-500&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\OneDriveStandaloneUpdater.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/reporting&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Reporting Task-S-1-5-21-2149345784-271655743-1481329158-1001&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\OneDriveStandaloneUpdater.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/reporting&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Reporting Task-S-1-5-21-2149345784-271655743-1481329158-1002&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\OneDriveStandaloneUpdater.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/reporting&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Startup Task-S-1-5-21-1865810128-1616563830-3526441106-1142&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDriveLauncher.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/startInstances&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Startup Task-S-1-5-21-1865810128-1616563830-3526441106-500&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDriveLauncher.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/startInstances&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Startup Task-S-1-5-21-2149345784-271655743-1481329158-1001&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDriveLauncher.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/startInstances&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;OneDrive Startup Task-S-1-5-21-2149345784-271655743-1481329158-1002&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDriveLauncher.exe&quot;,
+        &quot;Arguments&quot;:  &quot;/startInstances&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;RNIdle Task&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Intel&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Windows\\System32\\drivers\\RivetNetworks\\Killer\\RNIdleTask.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;USER_ESRV_SVC_QUEENCREEK&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Intel(r) Energy Checker&quot;,
+        &quot;Execute&quot;:  &quot;powershell&quot;,
+        &quot;Arguments&quot;:  &quot;-Command \&quot;Start-Process -WindowStyle Hidden task.bat\&quot;&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;ZoomUpdateTaskUser-S-1-5-21-1865810128-1616563830-3526441106-1142&quot;,
+        &quot;TaskPath&quot;:  &quot;\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;Zoom Communications, Inc.&quot;,
+        &quot;Execute&quot;:  &quot;\&quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe\&quot;&quot;,
+        &quot;Arguments&quot;:  &quot;--action=UpdateSchedule&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;S-1-5-21-2149345784-271655743-1481329158-500&quot;,
+        &quot;TaskPath&quot;:  &quot;\\Agent Activation Runtime\\&quot;,
+        &quot;State&quot;:  1,
+        &quot;Author&quot;:  &quot;Microsoft Corporation&quot;,
+        &quot;Execute&quot;:  &quot;C:\\Windows\\System32\\AgentActivationRuntimeStarter.exe&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;GoogleUpdaterTaskSystem150.0.7863.0{69744D89-4159-4C2A-8B84-651E8EEA46CB}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\GoogleSystem\\GoogleUpdater\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;NT AUTHORITY\\SYSTEM&quot;,
+        &quot;Execute&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Google\\GoogleUpdater\\150.0.7863.0\\updater.exe\&quot;&quot;,
+        &quot;Arguments&quot;:  &quot;--wake --system&quot;
+    },
+    {
+        &quot;TaskName&quot;:  &quot;RunPlatformExperienceHelper_Daily&quot;,
+        &quot;TaskPath&quot;:  &quot;\\GoogleUserPEH\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  &quot;LBL\\LL-IT$&quot;,
+        &quot;Execute&quot;:  &quot;\&quot;C:\\Program Files\\Google\\Chrome\\Application\\PlatformExperienceHelper\\platform_experience_helper.exe\&quot;&quot;,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;SoftLandingCreativeManagementTask&quot;,
+        &quot;TaskPath&quot;:  &quot;\\SoftLanding\\S-1-5-21-1865810128-1616563830-3526441106-1142\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  null,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;SoftLandingDeferralTask-{02f44821-3279-4552-a587-bf7ac635f4b3}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\SoftLanding\\S-1-5-21-1865810128-1616563830-3526441106-1142\\&quot;,
+        &quot;State&quot;:  3,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  null,
+        &quot;Arguments&quot;:  null
+    },
+    {
+        &quot;TaskName&quot;:  &quot;SoftLandingTriggerTask-128000000001615609-render-{3d649317-21d1-4237-ae2e-18a82014ae1b}&quot;,
+        &quot;TaskPath&quot;:  &quot;\\SoftLanding\\S-1-5-21-1865810128-1616563830-3526441106-1142\\&quot;,
+        &quot;State&quot;:  1,
+        &quot;Author&quot;:  null,
+        &quot;Execute&quot;:  null,
+        &quot;Arguments&quot;:  null
+    }
+]</pre>
+        
+        <h3>Autorun Registry Keys</h3>
+        <pre>[
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;SecurityHealth&quot;,
+        &quot;Value&quot;:  &quot;C:\\WINDOWS\\system32\\SecurityHealthSystray.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;RtkAudUService&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\realtekservice.inf_amd64_3887065b7f139fc8\\RtkAudUService64.exe\&quot; -background&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;MsiTrueColor&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Portrait Displays\\MSI True Color\\MsiTrueColor.exe\&quot; startup_folder&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;MSI TrueColor&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files\\Portrait Displays\\MSI True Color\\MsiTrueColor.exe startup_folder&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Scanning RDP Plugin&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files\\Tricerat\\ScrewDrivers\\Scanning Client\\vt2ClientInstallRdp.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Endpoint RDP Plugin&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files\\Tricerat\\ScrewDrivers\\Endpoint Client\\install_rdp.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;AdobeGCInvoker-1.0&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Common Files\\Adobe\\AdobeGCClient\\AGCInvokerUtility.exe\&quot;&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce&quot;,
+        &quot;Name&quot;:  &quot;Delete Cached Update Binary&quot;,
+        &quot;Value&quot;:  &quot;C:\\WINDOWS\\system32\\cmd.exe /q /c del /q \&quot;C:\\Program Files\\Microsoft OneDrive\\Update\\OneDriveSetup.exe\&quot;&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce&quot;,
+        &quot;Name&quot;:  &quot;Delete Cached Standalone Update Binary&quot;,
+        &quot;Value&quot;:  &quot;C:\\WINDOWS\\system32\\cmd.exe /q /c del /q \&quot;C:\\Program Files\\Microsoft OneDrive\\StandaloneUpdater\\OneDriveSetup.exe\&quot;&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce&quot;,
+        &quot;Name&quot;:  &quot;msedge_cleanup_{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.69\\Installer\\setup.exe\&quot; --msedgewebview --delete-old-versions --system-level --verbose-logging --on-logon&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce&quot;,
+        &quot;Name&quot;:  &quot;msedge_cleanup_{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062}&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\149.0.4022.69\\Installer\\setup.exe\&quot; --msedge --channel=stable --delete-old-versions --system-level --verbose-logging --on-logon&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;OneDrive&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\&quot; /background&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Steam&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Users\\rfolsom\\Steam\\steam.exe\&quot; -silent&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Adobe Acrobat Synchronizer&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AdobeCollabSync.exe\&quot;&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Microsoft.Lists&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files\\Microsoft OneDrive\\26.095.0519.0003\\OneDrive.Sync.Service.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;AVGBrowserAutoLaunch_CB5378451B0DF0CF2210DAD8F3D219E1&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\AVG\\Browser\\Application\\AVGBrowser.exe\&quot; --check-run=src=logon --auto-launch-at-startup --profile-directory=\&quot;Default\&quot;&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Teams&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Users\\rfolsom\\AppData\\Local\\Microsoft\\WindowsApps\\MSTeams_8wekyb3d8bbwe\\ms-teams.exe\&quot; msteams:system-initiated&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Docker Desktop&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;MicrosoftEdgeAutoLaunch_1ADB402EF54FBC975846E942A70290D6&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\&quot; --no-startup-window --win-session-start&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Wondershare Helper Compact.exe&quot;,
+        &quot;Value&quot;:  &quot;C:\\Program Files (x86)\\Common Files\\Wondershare\\Wondershare Helper Compact\\WSHelper.exe&quot;
+    },
+    {
+        &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
+        &quot;Name&quot;:  &quot;Intelr Graphics Software&quot;,
+        &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\Intel Graphics Software\\IntelGraphicsSoftware.exe\&quot; -s&quot;
+    }
+]</pre>
         
     </body>
     </html>
