@@ -1,59 +1,90 @@
 import platform
 import csv
+import json
+import html
+import ctypes
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 
-def summarize_firewall(firewall_status):
-    if '"Enabled":  1' in firewall_status and firewall_status.count('"Enabled":  1') >= 3:
-        return "PASS - All firewall profiles enabled"
-    return "FAIL - One or more firewall profiles may be disabled"
+REPORT_DIR = Path("audit_output")
+REPORT_DIR.mkdir(exist_ok=True)
 
 
-def summarize_defender(defender_status):
-    if '"RealTimeProtectionEnabled":  true' in defender_status:
-        return "PASS - Defender real-time protection enabled"
-    return "FAIL - Defender real-time protection may be disabled"
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    except Exception:
+        return False
 
 
-def summarize_bitlocker(bitlocker_status):
-    if "Protection Status:    Protection On" in bitlocker_status:
-        return "PASS - BitLocker protection enabled"
-    if "Protection Status:    Protection Off" in bitlocker_status:
-        return "FAIL - BitLocker protection is off"
-    return "REVIEW - BitLocker status unclear"
-
-
-def summarize_password_policy(password_policy):
-    if "Minimum password length:" in password_policy and "Lockout threshold:" in password_policy:
-        return "PASS - Password policy and lockout policy detected"
-    return "REVIEW - Password policy could not be verified"
-
-
-def summarize_failed_logins(failed_logins):
-    if "Event ID: 4625" in failed_logins:
-        return "REVIEW - Failed login events found"
-    if "No failed login events found" in failed_logins:
-        return "PASS - No failed login events found"
-    return "REVIEW - Failed login status unclear"
- 
-def run_powershell(command):
+def run_powershell(command, timeout=30):
     try:
         result = subprocess.run(
-            ["powershell", "-Command", command], 
+            [
+                "powershell",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                command,
+            ],
             capture_output=True,
-            text=True
+            text=True,
+            timeout=timeout,
         )
-        if result.stdout.strip():
-            return result.stdout.strip()
 
-        if result.stderr.strip():
-            return "ERROR: " + result.stderr.strip()
+        stdout = result.stdout.strip()
+        stderr = result.stderr.strip()
 
-        return "No output returned"
+        if result.returncode != 0:
+            return {
+                "ok": False,
+                "stdout": stdout,
+                "stderr": stderr,
+                "error": stderr or f"Command failed with code {result.returncode}",
+            }
 
+        return {
+            "ok": True,
+            "stdout": stdout if stdout else "No output returned",
+            "stderr": stderr,
+            "error": None,
+        }
+
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": "",
+            "error": "Command timed out",
+        }
     except Exception as e:
-        return f"Error: {e}"
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": "",
+            "error": str(e),
+        }
+
+
+def parse_json_output(result):
+    if not result["ok"]:
+        return None
+
+    try:
+        return json.loads(result["stdout"])
+    except Exception:
+        return None
+
+
+def check_result(status, message, score):
+    return {
+        "status": status,
+        "message": message,
+        "score": score,
+    }
 
 
 def get_system_info():
@@ -62,56 +93,217 @@ def get_system_info():
         "os": platform.system(),
         "os_version": platform.version(),
         "architecture": platform.machine(),
-        "scan_time": datetime.now().isoformat()
+        "scan_time": datetime.now().isoformat(timespec="seconds"),
+        "running_as_admin": is_admin(),
     }
 
-def get_firewall_status():
-    return run_powershell(
-        "Get-NetFirewallProfile | Select-Object Name, Enabled | ConvertTo-Json"
+
+def audit_firewall():
+    result = run_powershell(
+        "Get-NetFirewallProfile | "
+        "Select-Object Name, Enabled | ConvertTo-Json"
     )
 
+    data = parse_json_output(result)
 
-def get_defender_status():
-    return run_powershell(
-        "Get-MpComputerStatus | Select-Object AMServiceEnabled, AntivirusEnabled, RealTimeProtectionEnabled | ConvertTo-Json"
+    if not data:
+        return check_result("REVIEW", "Firewall status could not be verified", 5), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    disabled = [p["Name"] for p in data if not p.get("Enabled")]
+
+    if not disabled:
+        return check_result("PASS", "All firewall profiles are enabled", 10), result["stdout"]
+
+    return check_result(
+        "FAIL",
+        f"Disabled firewall profiles: {', '.join(disabled)}",
+        0,
+    ), result["stdout"]
+
+
+def audit_defender():
+    result = run_powershell(
+        "Get-MpComputerStatus | "
+        "Select-Object AMServiceEnabled, AntivirusEnabled, "
+        "RealTimeProtectionEnabled, IoavProtectionEnabled, "
+        "AntispywareEnabled, AntivirusSignatureLastUpdated | ConvertTo-Json"
     )
 
+    data = parse_json_output(result)
 
-def get_local_admins():
-    return run_powershell(
-        "Get-LocalGroupMember -Group Administrators | Select-Object Name, ObjectClass | ConvertTo-Json"
+    if not data:
+        return check_result("REVIEW", "Microsoft Defender status could not be verified", 5), result["stdout"]
+
+    failures = []
+
+    for key in [
+        "AMServiceEnabled",
+        "AntivirusEnabled",
+        "RealTimeProtectionEnabled",
+        "IoavProtectionEnabled",
+        "AntispywareEnabled",
+    ]:
+        if data.get(key) is not True:
+            failures.append(key)
+
+    if not failures:
+        return check_result("PASS", "Microsoft Defender protections are enabled", 10), result["stdout"]
+
+    return check_result(
+        "FAIL",
+        f"Defender issues detected: {', '.join(failures)}",
+        0,
+    ), result["stdout"]
+
+
+def audit_local_admins():
+    result = run_powershell(
+        "Get-LocalGroupMember -Group Administrators | "
+        "Select-Object Name, ObjectClass, PrincipalSource | ConvertTo-Json"
     )
 
-def get_bitlocker_status():
-    return run_powershell(
-       "manage-bde -status C:"
-    )  
+    data = parse_json_output(result)
 
-def get_password_policy():
-    output = run_powershell("net accounts")
+    if not data:
+        return check_result("REVIEW", "Local administrators could not be verified", 5), result["stdout"]
 
-    # Clean line breaks for CSV readability
-    output = output.replace("\n", " | ")
+    if isinstance(data, dict):
+        data = [data]
 
-    return output
+    admin_count = len(data)
 
-def get_failed_logins():
-    output = run_powershell(
-        'wevtutil qe Security "/q:*[System[(EventID=4625)]]" /c:5 /f:text'
+    if admin_count <= 2:
+        return check_result("PASS", f"{admin_count} local administrator account(s) found", 10), result["stdout"]
+
+    return check_result("REVIEW", f"{admin_count} local administrator account(s) found", 5), result["stdout"]
+
+
+def audit_bitlocker():
+    result = run_powershell("manage-bde -status C:")
+
+    output = result["stdout"]
+
+    if "Protection Status:    Protection On" in output:
+        return check_result("PASS", "BitLocker protection is enabled on C:", 10), output
+
+    if "Protection Status:    Protection Off" in output:
+        return check_result("FAIL", "BitLocker protection is off on C:", 0), output
+
+    return check_result("REVIEW", "BitLocker status is unclear", 5), output
+
+
+def audit_password_policy():
+    result = run_powershell("net accounts")
+    output = result["stdout"]
+
+    score = 10
+    issues = []
+
+    if "Minimum password length:" in output:
+        try:
+            line = [x for x in output.splitlines() if "Minimum password length:" in x][0]
+            length = int(line.split(":")[-1].strip())
+            if length < 12:
+                score -= 4
+                issues.append(f"Minimum password length is {length}")
+        except Exception:
+            issues.append("Could not parse minimum password length")
+            score -= 2
+
+    if "Lockout threshold:" in output:
+        try:
+            line = [x for x in output.splitlines() if "Lockout threshold:" in x][0]
+            value = line.split(":")[-1].strip()
+
+            if value.lower() == "never":
+                score -= 4
+                issues.append("Account lockout threshold is never")
+        except Exception:
+            issues.append("Could not parse lockout threshold")
+            score -= 2
+    else:
+        score -= 3
+        issues.append("Lockout threshold not found")
+
+    if issues:
+        return check_result("REVIEW", "; ".join(issues), max(score, 0)), output
+
+    return check_result("PASS", "Password and lockout policy detected", 10), output
+
+
+def audit_failed_logins():
+    result = run_powershell(
+        'wevtutil qe Security "/q:*[System[(EventID=4625)]]" /c:10 /f:text'
     )
+
+    output = result["stdout"]
 
     if "No events were found" in output:
-        return "No failed login events found"
+        return check_result("PASS", "No recent failed login events found", 10), output
 
-    return output
-def save_to_csv(data, filename="audit_results.csv"):
-    with open(filename, "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=data.keys())
+    if "Event ID: 4625" in output:
+        count = output.count("Event ID: 4625")
+        return check_result("REVIEW", f"{count} recent failed login event(s) found", 5), output
+
+    return check_result("REVIEW", "Failed login status could not be verified", 5), output
+
+
+def save_to_json(data, filename):
+    with open(filename, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
+
+
+def save_to_csv(data, filename):
+    flat = {
+        "hostname": data["system"]["hostname"],
+        "scan_time": data["system"]["scan_time"],
+        "running_as_admin": data["system"]["running_as_admin"],
+        "overall_score": data["overall_score"],
+    }
+
+    for check_name, check_data in data["checks"].items():
+        flat[f"{check_name}_status"] = check_data["summary"]["status"]
+        flat[f"{check_name}_message"] = check_data["summary"]["message"]
+        flat[f"{check_name}_score"] = check_data["summary"]["score"]
+
+    with open(filename, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=flat.keys())
         writer.writeheader()
-        writer.writerow(data)
-#  HTML Output
-def save_to_html(data, filename="audit_report.html"):
-    html = f"""
+        writer.writerow(flat)
+
+
+def save_to_html(data, filename):
+    rows = ""
+
+    for name, check in data["checks"].items():
+        status = html.escape(check["summary"]["status"])
+        message = html.escape(check["summary"]["message"])
+        score = check["summary"]["score"]
+        css_class = status.lower()
+
+        rows += f"""
+        <tr>
+            <td>{html.escape(name)}</td>
+            <td class="{css_class}">{status}</td>
+            <td>{message}</td>
+            <td>{score}/10</td>
+        </tr>
+        """
+
+    raw_sections = ""
+
+    for name, check in data["checks"].items():
+        raw_sections += f"""
+        <h3>{html.escape(name)}</h3>
+        <pre>{html.escape(check["raw"])}</pre>
+        """
+
+    system = data["system"]
+
+    report = f"""
     <html>
     <head>
         <title>Windows Security Audit Report</title>
@@ -120,12 +312,10 @@ def save_to_html(data, filename="audit_report.html"):
                 font-family: Arial, sans-serif;
                 margin: 40px;
             }}
-            h1 {{
-                color: #333;
-            }}
             table {{
                 border-collapse: collapse;
                 width: 100%;
+                margin-bottom: 25px;
             }}
             th, td {{
                 border: 1px solid #ccc;
@@ -161,69 +351,73 @@ def save_to_html(data, filename="audit_report.html"):
 
         <h2>System Information</h2>
         <table>
-            <tr><th>Hostname</th><td>{data.get("hostname")}</td></tr>
-            <tr><th>OS</th><td>{data.get("os")}</td></tr>
-            <tr><th>OS Version</th><td>{data.get("os_version")}</td></tr>
-            <tr><th>Architecture</th><td>{data.get("architecture")}</td></tr>
-            <tr><th>Scan Time</th><td>{data.get("scan_time")}</td></tr>
+            <tr><th>Hostname</th><td>{html.escape(str(system["hostname"]))}</td></tr>
+            <tr><th>OS</th><td>{html.escape(str(system["os"]))}</td></tr>
+            <tr><th>OS Version</th><td>{html.escape(str(system["os_version"]))}</td></tr>
+            <tr><th>Architecture</th><td>{html.escape(str(system["architecture"]))}</td></tr>
+            <tr><th>Scan Time</th><td>{html.escape(str(system["scan_time"]))}</td></tr>
+            <tr><th>Running as Admin</th><td>{html.escape(str(system["running_as_admin"]))}</td></tr>
         </table>
+
+        <h2>Overall Score: {data["overall_score"]}/100</h2>
 
         <h2>Security Summary</h2>
         <table>
-            <tr><th>Check</th><th>Result</th></tr>
-            <tr><td>Firewall</td><td>{data.get("firewall_summary")}</td></tr>
-            <tr><td>Defender</td><td>{data.get("defender_summary")}</td></tr>
-            <tr><td>BitLocker</td><td>{data.get("bitlocker_summary")}</td></tr>
-            <tr><td>Password Policy</td><td>{data.get("password_policy_summary")}</td></tr>
-            <tr><td>Failed Logins</td><td>{data.get("failed_login_summary")}</td></tr>
+            <tr>
+                <th>Check</th>
+                <th>Status</th>
+                <th>Message</th>
+                <th>Score</th>
+            </tr>
+            {rows}
         </table>
 
         <h2>Raw Audit Data</h2>
-
-        <h3>Firewall Status</h3>
-        <pre>{data.get("firewall_status")}</pre>
-
-        <h3>Defender Status</h3>
-        <pre>{data.get("defender_status")}</pre>
-
-        <h3>Local Administrators</h3>
-        <pre>{data.get("local_admins")}</pre>
-
-        <h3>BitLocker Status</h3>
-        <pre>{data.get("bitlocker_status")}</pre>
-
-        <h3>Password Policy</h3>
-        <pre>{data.get("password_policy")}</pre>
-
-        <h3>Failed Login Events</h3>
-        <pre>{data.get("failed_logins")}</pre>
+        {raw_sections}
     </body>
     </html>
     """
 
     with open(filename, "w", encoding="utf-8") as file:
-        file.write(html)
+        file.write(report)
 
 
 def main():
-    results = get_system_info()
+    checks = {}
 
-    results["firewall_status"] = get_firewall_status()
-    results["defender_status"] = get_defender_status()
-    results["local_admins"] = get_local_admins()
-    results["bitlocker_status"] = get_bitlocker_status()
-    results["password_policy"] = get_password_policy()
-    results["failed_logins"] = get_failed_logins()
+    audit_functions = {
+        "Firewall": audit_firewall,
+        "Microsoft Defender": audit_defender,
+        "Local Administrators": audit_local_admins,
+        "BitLocker": audit_bitlocker,
+        "Password Policy": audit_password_policy,
+        "Failed Logins": audit_failed_logins,
+    }
 
-    results["firewall_summary"] = summarize_firewall(results["firewall_status"])
-    results["defender_summary"] = summarize_defender(results["defender_status"])
-    results["bitlocker_summary"] = summarize_bitlocker(results["bitlocker_status"])
-    results["password_policy_summary"] = summarize_password_policy(results["password_policy"])
-    results["failed_login_summary"] = summarize_failed_logins(results["failed_logins"])
-  
-    save_to_csv(results)
-    save_to_html(results)
-    print("Audit complete. Results saved to audit_results.csv and audit_report.html")
+    for name, function in audit_functions.items():
+        summary, raw = function()
+        checks[name] = {
+            "summary": summary,
+            "raw": raw,
+        }
+
+    total_score = sum(check["summary"]["score"] for check in checks.values())
+    max_score = len(checks) * 10
+    overall_score = round((total_score / max_score) * 100)
+
+    report = {
+        "system": get_system_info(),
+        "overall_score": overall_score,
+        "checks": checks,
+    }
+
+    save_to_json(report, REPORT_DIR / "audit_report.json")
+    save_to_csv(report, REPORT_DIR / "audit_results.csv")
+    save_to_html(report, REPORT_DIR / "audit_report.html")
+
+    print("Audit complete.")
+    print(f"Overall score: {overall_score}/100")
+    print(f"Reports saved in: {REPORT_DIR.resolve()}")
 
 
 if __name__ == "__main__":
