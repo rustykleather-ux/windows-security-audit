@@ -963,6 +963,88 @@ def audit_autoruns_registry():
         f"{len(flagged)} suspicious autorun entrie(s) found: {', '.join(flagged[:10])}",
         5
     ), result["stdout"]
+def audit_windows_services():
+    command = (
+        "$services = Get-CimInstance Win32_Service | "
+        "Where-Object { $_.StartMode -eq 'Auto' -and $_.State -eq 'Running' } | "
+        "Select-Object Name, DisplayName, State, StartMode, StartName, PathName; "
+        "$services | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Windows services could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_keywords = [
+        "powershell",
+        "cmd.exe",
+        "wscript",
+        "cscript",
+        "mshta",
+        "rundll32",
+        "regsvr32",
+        "bitsadmin",
+        "certutil",
+        "appdata",
+        "temp",
+        "public",
+        "downloads",
+        ".ps1",
+        ".vbs",
+        ".js",
+        ".bat",
+        ".cmd",
+        ".scr"
+    ]
+
+
+
+    flagged = []
+
+    for service in data:
+        combined = " ".join([
+            str(service.get("Name", "")),
+            str(service.get("DisplayName", "")),
+            str(service.get("PathName", "")),
+        ]).lower()
+
+        start_name = str(service.get("StartName", "")).lower()
+
+        keyword_hit = any(keyword in combined for keyword in suspicious_keywords)
+
+        # Flag unquoted service paths with spaces.
+        path = str(service.get("PathName", ""))
+        unquoted_path = (
+            path
+            and " " in path
+            and not path.strip().startswith('"')
+            and ".exe" in path.lower()
+        )
+
+        if keyword_hit or unquoted_path:
+            flagged.append(service.get("DisplayName") or service.get("Name"))
+
+    if not flagged:
+        return check_result(
+            "PASS",
+            f"{len(data)} running automatic service(s) reviewed; no suspicious service indicators found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(flagged)} suspicious service indicator(s) found: {', '.join(flagged[:10])}",
+        5
+    ), result["stdout"]
 
 def main():
     checks = {}
@@ -982,6 +1064,7 @@ def main():
         "Scheduled Tasks": audit_scheduled_tasks,
         "Autorun Registry Keys": audit_autoruns_registry,
         "Startup Folders": audit_startup_folders,
+        "Windows Services": audit_windows_services,
 }
 
     for name, function in audit_functions.items():

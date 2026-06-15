@@ -50,11 +50,11 @@
             <tr><th>OS</th><td>Windows</td></tr>
             <tr><th>OS Version</th><td>10.0.26200</td></tr>
             <tr><th>Architecture</th><td>AMD64</td></tr>
-            <tr><th>Scan Time</th><td>2026-06-15T13:46:17</td></tr>
+            <tr><th>Scan Time</th><td>2026-06-15T13:59:06</td></tr>
             <tr><th>Running as Admin</th><td>True</td></tr>
         </table>
 
-        <h2>Overall Score: 68/100</h2>
+        <h2>Overall Score: 65/100</h2>
 
         <h2>Security Summary</h2>
         <table>
@@ -153,6 +153,20 @@
             <td>Autorun Registry Keys</td>
             <td class="review">REVIEW</td>
             <td>7 suspicious autorun entrie(s) found: HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MsiTrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\MSI TrueColor, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Update Binary, HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce\Delete Cached Standalone Update Binary, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\AVGBrowserAutoLaunch_CB5378451B0DF0CF2210DAD8F3D219E1, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\Teams, HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\MicrosoftEdgeAutoLaunch_1ADB402EF54FBC975846E942A70290D6</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Startup Folders</td>
+            <td class="review">REVIEW</td>
+            <td>2 suspicious startup folder item(s) found: C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\desktop.ini, C:\Users\rfolsom\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Send to OneNote.lnk</td>
+            <td>5/10</td>
+        </tr>
+        
+        <tr>
+            <td>Windows Services</td>
+            <td class="review">REVIEW</td>
+            <td>61 suspicious service indicator(s) found: AppX Deployment Service (AppXSVC), Windows Audio Endpoint Builder, Windows Audio, Base Filtering Engine, Background Tasks Infrastructure Service, Capability Access Manager Service, Connected Devices Platform Service, CoreMessaging, Cryptographic Services, DCOM Server Process Launcher</td>
             <td>5/10</td>
         </tr>
         
@@ -1865,6 +1879,878 @@ Account Logon
         &quot;RegistryPath&quot;:  &quot;HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run&quot;,
         &quot;Name&quot;:  &quot;Intelr Graphics Software&quot;,
         &quot;Value&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\Intel Graphics Software\\IntelGraphicsSoftware.exe\&quot; -s&quot;
+    }
+]</pre>
+        
+        <h3>Startup Folders</h3>
+        <pre>[
+    {
+        &quot;StartupPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup&quot;,
+        &quot;Name&quot;:  &quot;desktop.ini&quot;,
+        &quot;FullName&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\desktop.ini&quot;,
+        &quot;Extension&quot;:  &quot;.ini&quot;,
+        &quot;Length&quot;:  174,
+        &quot;LastWriteTime&quot;:  &quot;\/Date(1741277604901)\/&quot;
+    },
+    {
+        &quot;StartupPath&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup&quot;,
+        &quot;Name&quot;:  &quot;Send to OneNote.lnk&quot;,
+        &quot;FullName&quot;:  &quot;C:\\Users\\rfolsom\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Send to OneNote.lnk&quot;,
+        &quot;Extension&quot;:  &quot;.lnk&quot;,
+        &quot;Length&quot;:  1321,
+        &quot;LastWriteTime&quot;:  &quot;\/Date(1768398882141)\/&quot;
+    },
+    {
+        &quot;StartupPath&quot;:  &quot;C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup&quot;,
+        &quot;Name&quot;:  &quot;desktop.ini&quot;,
+        &quot;FullName&quot;:  &quot;C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\desktop.ini&quot;,
+        &quot;Extension&quot;:  &quot;.ini&quot;,
+        &quot;Length&quot;:  174,
+        &quot;LastWriteTime&quot;:  &quot;\/Date(1711956244058)\/&quot;
+    }
+]</pre>
+        
+        <h3>Windows Services</h3>
+        <pre>[
+    {
+        &quot;Name&quot;:  &quot;AdobeARMservice&quot;,
+        &quot;DisplayName&quot;:  &quot;Adobe Acrobat Update Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Common Files\\Adobe\\ARM\\1.0\\armsvc.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;AppXSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;AppX Deployment Service (AppXSVC)&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k wsappx -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;AudioEndpointBuilder&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Audio Endpoint Builder&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Audiosrv&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Audio&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalServiceNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;BFE&quot;,
+        &quot;DisplayName&quot;:  &quot;Base Filtering Engine&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceNoNetworkFirewall -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;BrokerInfrastructure&quot;,
+        &quot;DisplayName&quot;:  &quot;Background Tasks Infrastructure Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k DcomLaunch -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;camsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Capability Access Manager Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k osprivacy -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;CDPSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Connected Devices Platform Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;ClickToRunSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Microsoft Office Click-to-Run Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Common Files\\Microsoft Shared\\ClickToRun\\OfficeClickToRun.exe\&quot; /service&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;CoreMessagingRegistrar&quot;,
+        &quot;DisplayName&quot;:  &quot;CoreMessaging&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceNoNetwork -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;CryptSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Cryptographic Services&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k NetworkService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DcomLaunch&quot;,
+        &quot;DisplayName&quot;:  &quot;DCOM Server Process Launcher&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k DcomLaunch -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DeviceAssociationService&quot;,
+        &quot;DisplayName&quot;:  &quot;Device Association Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Dhcp&quot;,
+        &quot;DisplayName&quot;:  &quot;DHCP Client&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DiagTrack&quot;,
+        &quot;DisplayName&quot;:  &quot;Connected User Experiences and Telemetry&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k utcsvc -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DispBrokerDesktopSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Display Policy Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Dnscache&quot;,
+        &quot;DisplayName&quot;:  &quot;DNS Client&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k NetworkService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DoSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Delivery Optimization&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k NetworkService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DPS&quot;,
+        &quot;DisplayName&quot;:  &quot;Diagnostic Policy Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalServiceNoNetwork -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;dptftcs&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Dynamic Tuning Technology Telemetry Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\dtt_sw.inf_amd64_a56d66a9d40a4cb2\\ipfsvc.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DSAService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Driver \u0026 Support Assistant&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Intel\\Driver and Support Assistant\\x86\\DSAService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DSAUpdateService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Driver \u0026 Support Assistant Updater&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\Intel\\Driver and Support Assistant\\x86\\DSAUpdateService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DtsApo4Service&quot;,
+        &quot;DisplayName&quot;:  &quot;DtsApo4Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DTS\\PC\\APO4x\\DtsApo4Service.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;DusmSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Data Usage&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalServiceNetworkRestricted -p -s DusmSvc&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;ESRV_SVC_QUEENCREEK&quot;,
+        &quot;DisplayName&quot;:  &quot;Energy Server Service queencreek&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\SUR\\QUEENCREEK\\x64\\esrv_svc.exe\&quot; \&quot;--AUTO_START\&quot; \&quot;--start\&quot; \&quot;--start_options_registry_key\&quot; \&quot;HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\ESRV_SVC_QUEENCREEK\\_start\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;EventLog&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Event Log&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalServiceNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;EventSystem&quot;,
+        &quot;DisplayName&quot;:  &quot;COM+ Event System&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceRedirectionGuard -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;FlexNet Licensing Service 64&quot;,
+        &quot;DisplayName&quot;:  &quot;FlexNet Licensing Service 64&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Common Files\\Macrovision Shared\\FlexNet Publisher\\FNPLicensingService64.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;FontCache&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Font Cache Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;GameInputRedistService&quot;,
+        &quot;DisplayName&quot;:  &quot;GameInput Redist Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Microsoft GameInput\\x64\\GameInputRedistService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;HPDrvExtSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;HPDrvExtSvc&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\hpdesx64.inf_amd64_dd7fd2090453955a\\HPDrvExtSvc.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;igccservice&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Graphics Command Center Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\igcc_dch.inf_amd64_20ac390ae08872cc\\OneApp.IGCC.WinService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;IgoAudioService&quot;,
+        &quot;DisplayName&quot;:  &quot;intelliGo Audio Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\igoaudioservice.inf_amd64_8845dc9a09980cb8\\IgoAudioService_x64.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;IKEEXT&quot;,
+        &quot;DisplayName&quot;:  &quot;IKE and AuthIP IPsec Keying Modules&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;IntelAudioService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Audio Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\intcoed.inf_amd64_7051c5912b2504cc\\\\AS\\\\IAS\\\\IntelAudioService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;IntelGraphicsSoftwareService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intelr Graphics Software Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\Intel Graphics Software\\IntelGraphicsSoftware.Service.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;InventorySvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Inventory and Compatibility Appraisal service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k InvSvcGroup -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;ipfsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Innovation Platform Framework Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\ipf_cpu.inf_amd64_1d0f5f1cb16186f0\\ipf_uf.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;iphlpsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;IP Helper&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k NetSvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Killer Analytics Service&quot;,
+        &quot;DisplayName&quot;:  &quot;Killer Analytics Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\RivetNetworks\\Killer\\KillerAnalyticsService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Killer Network Service&quot;,
+        &quot;DisplayName&quot;:  &quot;Killer Network Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\RivetNetworks\\Killer\\KillerNetworkService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Killer Provider Data Helper Service&quot;,
+        &quot;DisplayName&quot;:  &quot;Killer Provider Data Helper Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\RivetNetworks\\Killer\\KillerProviderDataHelperService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;KillerSmartphoneSleepService&quot;,
+        &quot;DisplayName&quot;:  &quot;KillerSmartphoneSleepService&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\RivetNetworks\\Killer\\KSPSService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;LanmanServer&quot;,
+        &quot;DisplayName&quot;:  &quot;Server&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;LanmanWorkstation&quot;,
+        &quot;DisplayName&quot;:  &quot;Workstation&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k NetworkService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;logi_lamparray_service&quot;,
+        &quot;DisplayName&quot;:  &quot;Logitech LampArray Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\logi_lamparray_usb.inf_amd64_cdf3ca3c77d5f267\\logi_lamparray_service.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;LSM&quot;,
+        &quot;DisplayName&quot;:  &quot;Local Session Manager&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k DcomLaunch -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Micro Star SCM&quot;,
+        &quot;DisplayName&quot;:  &quot;Micro Star SCM&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Windows\\SysWOW64\\MSIService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;mpssvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Defender Firewall&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceNoNetworkFirewall -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;MSI Foundation Service&quot;,
+        &quot;DisplayName&quot;:  &quot;MSI Foundation Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\MSI\\MSI NBFoundation Service\\MSIAPService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;MSI Sendevsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Sensor dev service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\MSI\\MSI NBFoundation Service\\Sendevsvc.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;MSITrueColorService&quot;,
+        &quot;DisplayName&quot;:  &quot;MSI True Color Service by Portrait Displays&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Portrait Displays\\MSI True Color\\MsiTrueColorService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;MSI_Center_Service&quot;,
+        &quot;DisplayName&quot;:  &quot;MSI Center Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\MSI\\MSI Center\\MSI_Central_Service.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;NativePushService&quot;,
+        &quot;DisplayName&quot;:  &quot;Wondershare Native Push Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Users\\rfolsom\\AppData\\Local\\Wondershare\\Wondershare NativePush\\WsNativePushService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Netlogon&quot;,
+        &quot;DisplayName&quot;:  &quot;Netlogon&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\lsass.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;nsi&quot;,
+        &quot;DisplayName&quot;:  &quot;Network Store Interface Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;NVDisplay.ContainerLocalSystem&quot;,
+        &quot;DisplayName&quot;:  &quot;NVIDIA Display Container LS&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\nvmi.inf_amd64_d26e2e336b04c463\\Display.NvContainer\\NVDisplay.Container.exe -s NVDisplay.ContainerLocalSystem -f C:\\ProgramData\\NVIDIA\\NVDisplay.ContainerLocalSystem.log -l 3 -d C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\nvmi.inf_amd64_d26e2e336b04c463\\Display.NvContainer\\plugins\\LocalSystem -r -p 30000 -cfg NVDisplay.ContainerLocalSystem\\LocalSystem /ert&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;PcaSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Program Compatibility Assistant Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Power&quot;,
+        &quot;DisplayName&quot;:  &quot;Power&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k DcomLaunch -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;ProfSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;User Profile Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k UserProfileService -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;RicohDeviceSoftwareManager&quot;,
+        &quot;DisplayName&quot;:  &quot;Device Software Manager&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\RICOH Device Software Manager\\service\\rorchcdk.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;RpcEptMapper&quot;,
+        &quot;DisplayName&quot;:  &quot;RPC Endpoint Mapper&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k RPCSS -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;RpcSs&quot;,
+        &quot;DisplayName&quot;:  &quot;Remote Procedure Call (RPC)&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k rpcss -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;RstMwService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Storage Middleware Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\iastorvd.inf_amd64_22858d1857384824\\RstMwService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;RtkAudioUniversalService&quot;,
+        &quot;DisplayName&quot;:  &quot;Realtek Audio Universal Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\realtekservice.inf_amd64_3887065b7f139fc8\\RtkAudUService64.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SamSs&quot;,
+        &quot;DisplayName&quot;:  &quot;Security Accounts Manager&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\lsass.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Schedule&quot;,
+        &quot;DisplayName&quot;:  &quot;Task Scheduler&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SENS&quot;,
+        &quot;DisplayName&quot;:  &quot;System Event Notification Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcsRedirectionGuard -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SessionSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Session Detection&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\drivers\\GoodixSessionService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;ShellHWDetection&quot;,
+        &quot;DisplayName&quot;:  &quot;Shell Hardware Detection&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SplunkForwarder&quot;,
+        &quot;DisplayName&quot;:  &quot;SplunkForwarder&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT SERVICE\\SplunkForwarder&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\SplunkUniversalForwarder\\bin\\splunkd.exe\&quot; service&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Spooler&quot;,
+        &quot;DisplayName&quot;:  &quot;Print Spooler&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\spoolsv.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;sppsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Software Protection&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\NetworkService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\sppsvc.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;StateRepository&quot;,
+        &quot;DisplayName&quot;:  &quot;State Repository Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k appmodel -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;StiSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Image Acquisition (WIA)&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k imgsvc&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;StorSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Storage Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SysMain&quot;,
+        &quot;DisplayName&quot;:  &quot;SysMain&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SystemEventsBroker&quot;,
+        &quot;DisplayName&quot;:  &quot;System Events Broker&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k DcomLaunch -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;SystemUsageReportSvc_QUEENCREEK&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) System Usage Report Service SystemUsageReportSvc_QUEENCREEK&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\Intel\\SUR\\QUEENCREEK\\SurSvc.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;TextInputManagementService&quot;,
+        &quot;DisplayName&quot;:  &quot;Text Input Management Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Themes&quot;,
+        &quot;DisplayName&quot;:  &quot;Themes&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;TrkWks&quot;,
+        &quot;DisplayName&quot;:  &quot;Distributed Link Tracking Client&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;TrustedInstaller&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Modules Installer&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;localSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\servicing\\TrustedInstaller.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;UserManager&quot;,
+        &quot;DisplayName&quot;:  &quot;User Manager&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;UsoSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Update Orchestrator Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WazuhSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Wazuh&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Wcmsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Connection Manager&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT Authority\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalServiceNetworkRestricted -p -s Wcmsvc&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;whesvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Health and Optimized Experiences&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k whesvc -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WinDefend&quot;,
+        &quot;DisplayName&quot;:  &quot;Microsoft Defender Antivirus Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.26050.15-0\\MsMpEng.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;Winmgmt&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Management Instrumentation&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;localSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WlanSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;WLAN AutoConfig&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WMIRegistrationService&quot;,
+        &quot;DisplayName&quot;:  &quot;Intel(R) Management Engine WMI Provider Registration&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\mewmiprov.inf_amd64_d51901c26227fb29\\WMIRegistrationService.exe&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WpnService&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Push Notifications System Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k netsvcs -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WSAIFabricSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;WSAIFabricSvc&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k WSAIFabricSvcGroup -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;wscsvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Security Center&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\System32\\svchost.exe -k LocalServiceNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WSearch&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Search&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\SearchIndexer.exe /Embedding&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WSLService&quot;,
+        &quot;DisplayName&quot;:  &quot;WSL Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WSL\\wslservice.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;MDCoreSvc&quot;,
+        &quot;DisplayName&quot;:  &quot;Microsoft Defender Core Service&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.26050.15-0\\MpDefenderCoreService.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;cbdhsvc_3818f8&quot;,
+        &quot;DisplayName&quot;:  &quot;Clipboard User Service_3818f8&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  null,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k ClipboardSvcGroup -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;CDPUserSvc_3818f8&quot;,
+        &quot;DisplayName&quot;:  &quot;Connected Devices Platform User Service_3818f8&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  null,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k UnistackSvcGroup&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;webthreatdefusersvc_3818f8&quot;,
+        &quot;DisplayName&quot;:  &quot;Web Threat Defense User Service_3818f8&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  null,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k LocalSystemNetworkRestricted -p&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;WpnUserService_3818f8&quot;,
+        &quot;DisplayName&quot;:  &quot;Windows Push Notifications User Service_3818f8&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  null,
+        &quot;PathName&quot;:  &quot;C:\\WINDOWS\\system32\\svchost.exe -k UnistackSvcGroup&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;CoworkVMService&quot;,
+        &quot;DisplayName&quot;:  &quot;Claude&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WindowsApps\\Claude_1.11187.4.0_x64__pzs8sxrjxfjjc\\app\\resources\\cowork-svc.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;GamingServicesNet&quot;,
+        &quot;DisplayName&quot;:  &quot;Gaming Services&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;NT AUTHORITY\\LocalService&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_37.114.10001.0_x64__8wekyb3d8bbwe\\GamingServicesNet.exe\&quot;&quot;
+    },
+    {
+        &quot;Name&quot;:  &quot;GamingServices&quot;,
+        &quot;DisplayName&quot;:  &quot;Gaming Services&quot;,
+        &quot;State&quot;:  &quot;Running&quot;,
+        &quot;StartMode&quot;:  &quot;Auto&quot;,
+        &quot;StartName&quot;:  &quot;LocalSystem&quot;,
+        &quot;PathName&quot;:  &quot;\&quot;C:\\Program Files\\WindowsApps\\Microsoft.GamingServices_37.114.10001.0_x64__8wekyb3d8bbwe\\GamingServices.exe\&quot;&quot;
     }
 ]</pre>
         
