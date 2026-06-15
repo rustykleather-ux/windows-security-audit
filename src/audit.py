@@ -1319,6 +1319,75 @@ def audit_defender_asr_rules():
 
     return check_result("FAIL", "ASR rules exist but none are enabled or in audit mode", 0), result["stdout"]
 
+def audit_listening_connections():
+    command = (
+        "$connections = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | "
+        "Select-Object LocalAddress, LocalPort, State, OwningProcess, "
+        "@{Name='ProcessName';Expression={(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName}}, "
+        "@{Name='ProcessPath';Expression={(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).Path}}; "
+        "$connections | Sort-Object LocalPort | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Listening connections could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    risky_ports = {
+        21: "FTP",
+        23: "Telnet",
+        25: "SMTP",
+        80: "HTTP",
+        135: "RPC",
+        139: "NetBIOS",
+        445: "SMB",
+        1433: "SQL Server",
+        3306: "MySQL",
+        3389: "RDP",
+        5900: "VNC",
+        5985: "WinRM HTTP",
+        5986: "WinRM HTTPS",
+        8080: "HTTP alternate",
+    }
+
+    findings = []
+
+    for conn in data:
+        port = conn.get("LocalPort")
+        address = str(conn.get("LocalAddress", ""))
+        process = str(conn.get("ProcessName", "Unknown"))
+
+        try:
+            port = int(port)
+        except Exception:
+            continue
+
+        if port in risky_ports:
+            findings.append(
+                f"{risky_ports[port]} port {port} listening on {address} by {process}"
+            )
+
+    if not findings:
+        return check_result(
+            "PASS",
+            f"{len(data)} listening TCP port(s) reviewed; no common risky ports found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(findings)} notable listening port(s): " + "; ".join(findings[:10]),
+        5
+    ), result["stdout"]
+
 def main():
     checks = {}
 
@@ -1343,6 +1412,7 @@ def main():
         "Share Permissions": audit_share_permissions,
         "LSA / Credential Guard": audit_lsa_credential_guard,
         "Defender ASR Rules": audit_defender_asr_rules,
+        "Listening Connections": audit_listening_connections,
 }
 
     for name, function in audit_functions.items():
