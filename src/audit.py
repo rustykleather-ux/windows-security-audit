@@ -129,7 +129,42 @@ def get_system_info():
         "running_as_admin": is_admin(),
     }
 
+def audit_rdp():
+    command = (
+        "$rdp = Get-ItemProperty "
+        "-Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server' "
+        "-Name fDenyTSConnections; "
+        "$nla = Get-ItemProperty "
+        "-Path 'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' "
+        "-Name UserAuthentication; "
+        "$fw = Get-NetFirewallRule -DisplayGroup 'Remote Desktop' -ErrorAction SilentlyContinue | "
+        "Select-Object DisplayName, Enabled, Direction, Action; "
+        "[PSCustomObject]@{ "
+        "RdpEnabled = ($rdp.fDenyTSConnections -eq 0); "
+        "NlaEnabled = ($nla.UserAuthentication -eq 1); "
+        "FirewallRules = $fw "
+        "} | ConvertTo-Json -Depth 4"
+    )
 
+    result = run_powershell(command)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "RDP status could not be verified", 5), result["stdout"]
+
+    rdp_enabled = data.get("RdpEnabled")
+    nla_enabled = data.get("NlaEnabled")
+
+    if rdp_enabled is False:
+        return check_result("PASS", "RDP is disabled", 10), result["stdout"]
+
+    if rdp_enabled is True and nla_enabled is True:
+        return check_result("REVIEW", "RDP is enabled, but Network Level Authentication is enabled", 6), result["stdout"]
+
+    if rdp_enabled is True and nla_enabled is False:
+        return check_result("FAIL", "RDP is enabled and Network Level Authentication is disabled", 0), result["stdout"]
+
+    return check_result("REVIEW", "RDP status is unclear", 5), result["stdout"]
 def audit_firewall():
     result = run_powershell(
         "Get-NetFirewallProfile | "
@@ -425,6 +460,7 @@ def main():
         "Password Policy": audit_password_policy,
         "Failed Logins": audit_failed_logins,
         "Windows Update": audit_windows_update,
+        "RDP": audit_rdp,
     }
 
     for name, function in audit_functions.items():
