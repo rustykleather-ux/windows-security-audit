@@ -128,6 +128,39 @@ def get_system_info():
         "scan_time": datetime.now().isoformat(timespec="seconds"),
         "running_as_admin": is_admin(),
     }
+def audit_smb():
+    command = (
+        "$smb = Get-SmbServerConfiguration | "
+        "Select-Object EnableSMB1Protocol, EnableSMB2Protocol, "
+        "RequireSecuritySignature, EnableSecuritySignature, "
+        "EnableInsecureGuestLogons; "
+        "$smb | ConvertTo-Json"
+    )
+
+    result = run_powershell(command)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result("REVIEW", "SMB configuration could not be verified", 5), result["stdout"]
+
+    issues = []
+
+    if data.get("EnableSMB1Protocol") is True:
+        issues.append("SMBv1 is enabled")
+
+    if data.get("EnableInsecureGuestLogons") is True:
+        issues.append("Insecure guest logons are enabled")
+
+    if data.get("RequireSecuritySignature") is not True:
+        issues.append("SMB signing is not required")
+
+    if not issues:
+        return check_result("PASS", "SMBv1 disabled, guest logons disabled, and SMB signing required", 10), result["stdout"]
+
+    if "SMBv1 is enabled" in issues or "Insecure guest logons are enabled" in issues:
+        return check_result("FAIL", "; ".join(issues), 2), result["stdout"]
+
+    return check_result("REVIEW", "; ".join(issues), 6), result["stdout"]
 
 def audit_rdp():
     command = (
@@ -461,6 +494,7 @@ def main():
         "Failed Logins": audit_failed_logins,
         "Windows Update": audit_windows_update,
         "RDP": audit_rdp,
+        "SMB": audit_smb,
     }
 
     for name, function in audit_functions.items():
