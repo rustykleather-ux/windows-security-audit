@@ -1442,6 +1442,159 @@ def audit_powershell_security():
         5
     ), result["stdout"]
 
+def audit_usb_storage():
+    command = (
+        "$usbStor = Get-ItemProperty "
+        "-Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR' "
+        "-ErrorAction SilentlyContinue; "
+        "$policyPath = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\RemovableStorageDevices'; "
+        "$policyExists = Test-Path $policyPath; "
+        "[PSCustomObject]@{ "
+        "USBSTORStart = $usbStor.Start; "
+        "RemovableStoragePolicyExists = $policyExists "
+        "} | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "USB storage status could not be verified",
+            5
+        ), result["stdout"]
+
+    issues = []
+
+    # USBSTOR Start values:
+    # 3 = Manual/enabled
+    # 4 = Disabled
+    usb_start = data.get("USBSTORStart")
+
+    if usb_start == 4:
+        return check_result(
+            "PASS",
+            "USB mass storage is disabled",
+            10
+        ), result["stdout"]
+
+    if usb_start == 3:
+        issues.append("USB mass storage is enabled")
+
+    if not data.get("RemovableStoragePolicyExists"):
+        issues.append("No removable storage restriction policy detected")
+
+    if issues:
+        return check_result(
+            "REVIEW",
+            "; ".join(issues),
+            5
+        ), result["stdout"]
+
+    return check_result(
+        "PASS",
+        "USB storage settings reviewed; no obvious issues found",
+        10
+    ), result["stdout"]
+
+def audit_windows_update_age():
+    command = (
+        "$hotfix = Get-HotFix | "
+        "Sort-Object InstalledOn -Descending | "
+        "Select-Object -First 1 HotFixID, Description, InstalledOn; "
+        "$hotfix | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Last installed Windows update could not be verified",
+            5
+        ), result["stdout"]
+
+    try:
+        installed_on = datetime.fromisoformat(str(data.get("InstalledOn")).split("T")[0])
+        age_days = (datetime.now() - installed_on).days
+        hotfix_id = data.get("HotFixID", "Unknown")
+
+        if age_days <= 30:
+            return check_result(
+                "PASS",
+                f"Last installed update {hotfix_id} was {age_days} day(s) ago",
+                10
+            ), result["stdout"]
+
+        if age_days <= 60:
+            return check_result(
+                "REVIEW",
+                f"Last installed update {hotfix_id} was {age_days} day(s) ago",
+                6
+            ), result["stdout"]
+
+        return check_result(
+            "FAIL",
+            f"Last installed update {hotfix_id} was {age_days} day(s) ago",
+            0
+        ), result["stdout"]
+
+    except Exception as e:
+        return check_result(
+            "REVIEW",
+            f"Could not calculate Windows Update age: {e}",
+            5
+        ), result["stdout"]
+
+def audit_bitlocker_all_volumes():
+    command = (
+        "Get-BitLockerVolume | "
+        "Select-Object MountPoint, VolumeStatus, ProtectionStatus, "
+        "EncryptionPercentage, EncryptionMethod, LockStatus | "
+        "ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "BitLocker volume coverage could not be verified",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    issues = []
+
+    for volume in data:
+        mount = volume.get("MountPoint", "Unknown")
+        protection = str(volume.get("ProtectionStatus", "Unknown"))
+        encrypted = volume.get("EncryptionPercentage", 0)
+
+        if protection.lower() != "on":
+            issues.append(f"{mount} protection is {protection}")
+
+        if encrypted != 100:
+            issues.append(f"{mount} encryption is {encrypted}%")
+
+    if not issues:
+        return check_result(
+            "PASS",
+            f"{len(data)} volume(s) reviewed; all are fully protected",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        "; ".join(issues[:10]),
+        5
+    ), result["stdout"]
+
 def main():
     checks = {}
 
@@ -1468,6 +1621,9 @@ def main():
         "Defender ASR Rules": audit_defender_asr_rules,
         "Listening Connections": audit_listening_connections,
         "PowerShell Security": audit_powershell_security,
+        "USB Storage": audit_usb_storage,
+        "Windows Update Age": audit_windows_update_age,
+        "BitLocker All Volumes": audit_bitlocker_all_volumes,
 }
 
     for name, function in audit_functions.items():
