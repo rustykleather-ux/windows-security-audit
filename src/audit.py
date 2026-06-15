@@ -1388,6 +1388,60 @@ def audit_listening_connections():
         5
     ), result["stdout"]
 
+def audit_powershell_security():
+    command = (
+        "$paths = @{ "
+        "ScriptBlockLogging = 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging'; "
+        "ModuleLogging = 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging'; "
+        "Transcription = 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\Transcription' "
+        "}; "
+        "$v2 = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2 -ErrorAction SilentlyContinue; "
+        "$result = [PSCustomObject]@{ "
+        "ScriptBlockLogging = (Get-ItemProperty -Path $paths.ScriptBlockLogging -ErrorAction SilentlyContinue).EnableScriptBlockLogging; "
+        "ModuleLogging = (Get-ItemProperty -Path $paths.ModuleLogging -ErrorAction SilentlyContinue).EnableModuleLogging; "
+        "Transcription = (Get-ItemProperty -Path $paths.Transcription -ErrorAction SilentlyContinue).EnableTranscripting; "
+        "PowerShellV2State = $v2.State "
+        "}; "
+        "$result | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "PowerShell security settings could not be verified",
+            5
+        ), result["stdout"]
+
+    issues = []
+
+    if data.get("ScriptBlockLogging") != 1:
+        issues.append("Script Block Logging is not enabled")
+
+    if data.get("ModuleLogging") != 1:
+        issues.append("Module Logging is not enabled")
+
+    if data.get("Transcription") != 1:
+        issues.append("PowerShell Transcription is not enabled")
+
+    if str(data.get("PowerShellV2State", "")).lower() == "enabled":
+        issues.append("PowerShell v2 is enabled")
+
+    if not issues:
+        return check_result(
+            "PASS",
+            "PowerShell logging is enabled and PowerShell v2 is disabled",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        "; ".join(issues),
+        5
+    ), result["stdout"]
+
 def main():
     checks = {}
 
@@ -1413,6 +1467,7 @@ def main():
         "LSA / Credential Guard": audit_lsa_credential_guard,
         "Defender ASR Rules": audit_defender_asr_rules,
         "Listening Connections": audit_listening_connections,
+        "PowerShell Security": audit_powershell_security,
 }
 
     for name, function in audit_functions.items():
