@@ -137,6 +137,9 @@ audit_output/
 *.json
 *.csv
 
+#computer list
+src/computer_list.txt
+
 # Redis
 *.rdb
 *.aof
