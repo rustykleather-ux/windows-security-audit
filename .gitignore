@@ -131,6 +131,12 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
+## Reports
+audit_output/
+*.html
+*.json
+*.csv
+
 # Redis
 *.rdb
 *.aof
