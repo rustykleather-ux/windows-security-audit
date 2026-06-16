@@ -220,6 +220,7 @@ def parse_arguments():
     parser.add_argument("--csv", action="store_true", help="Generate CSV report")
     parser.add_argument("--json", action="store_true", help="Generate JSON report")
     parser.add_argument("--quiet", action="store_true", help="Suppress console output")
+    parser.add_argument("--summary", action="store_true", help="Print a concise console summary after the scan")
     parser.add_argument("--output", default="audit_output", help="Output directory")
     return parser.parse_args()
 
@@ -1262,6 +1263,7 @@ def save_to_csv(data, filename):
         "scan_time": data["system"]["scan_time"],
         "running_as_admin": data["system"]["running_as_admin"],
         "overall_score": data["overall_score"],
+        "overall_grade": data.get("overall_grade", get_letter_grade(data.get("overall_score", 0))),
     }
 
     for check_name, check_data in data["checks"].items():
@@ -1278,127 +1280,497 @@ def save_to_csv(data, filename):
         writer.writerow(flat)
 
 
+def get_score_band(score):
+    if score >= 85:
+        return "good"
+    if score >= 70:
+        return "fair"
+    return "poor"
+
+
+def get_check_category(check_name):
+    categories = {
+        "Endpoint Protection": [
+            "Microsoft Defender",
+            "Defender Signatures",
+            "Defender ASR Rules",
+            "PowerShell Security",
+        ],
+        "Patch Management": [
+            "Windows Update",
+            "Windows Update Age",
+        ],
+        "Network Exposure": [
+            "Firewall",
+            "RDP",
+            "SMB",
+            "Listening Connections",
+            "Network Shares",
+            "Share Permissions",
+        ],
+        "Identity & Access": [
+            "Local Administrators",
+            "Local Users",
+            "Password Policy",
+            "Failed Logins",
+            "UAC",
+            "LSA / Credential Guard",
+        ],
+        "Data Protection": [
+            "BitLocker",
+            "BitLocker All Volumes",
+            "Secure Boot / TPM",
+            "USB Storage",
+        ],
+        "Logging & Visibility": [
+            "Event Logging",
+        ],
+        "Persistence Review": [
+            "Installed Software",
+            "Scheduled Tasks",
+            "Autorun Registry Keys",
+            "Startup Folders",
+            "Windows Services",
+        ],
+    }
+
+    for category, checks in categories.items():
+        if check_name in checks:
+            return category
+
+    return "Other"
+
+
 def save_to_html(data, filename):
-    rows = ""
+    system = data["system"]
+    overall_score = data.get("overall_score", 0)
+    overall_grade = data.get("overall_grade", get_letter_grade(overall_score))
+    score_band = get_score_band(overall_score)
+
+    grade_class = {
+        "A": "grade-a",
+        "B": "grade-b",
+        "C": "grade-c",
+        "D": "grade-d",
+        "F": "grade-f",
+    }.get(overall_grade, "grade-f")
+
+    grade_text = {
+        "A": "Excellent Security Posture",
+        "B": "Good Security Posture",
+        "C": "Moderate Security Risk",
+        "D": "High Security Risk",
+        "F": "Critical Security Issues Detected",
+    }.get(overall_grade, "Security posture could not be classified")
+
+    status_counts = {"PASS": 0, "REVIEW": 0, "FAIL": 0}
+    risk_counts = {"High": 0, "Medium": 0, "Low": 0, "Informational": 0}
+    category_map = {}
+    priority_rows = ""
 
     for name, check in data["checks"].items():
-        status = html.escape(check["summary"]["status"])
-        message = html.escape(check["summary"]["message"])
-        score = check["summary"]["score"]
-        weight = check["summary"].get("weight", 5)
-        remediation = check["summary"].get("remediation", {})
-        risk = html.escape(str(remediation.get("risk", "")))
-        why = html.escape(str(remediation.get("why", "")))
-        fix = html.escape(str(remediation.get("fix", "")))
-        action = html.escape(str(remediation.get("action", "")))
-        css_class = status.lower()
+        summary = check["summary"]
+        status = summary.get("status", "REVIEW")
+        remediation = summary.get("remediation", {})
+        risk = remediation.get("risk", "Informational")
+        category = get_check_category(name)
 
-        rows += f"""
+        status_counts[status] = status_counts.get(status, 0) + 1
+        risk_counts[risk] = risk_counts.get(risk, 0) + 1
+        category_map.setdefault(category, []).append((name, check))
+
+        if status in ["FAIL", "REVIEW"]:
+            priority_rows += f"""
+            <tr>
+                <td>{html.escape(name)}</td>
+                <td><span class="badge {html.escape(status.lower())}">{html.escape(status)}</span></td>
+                <td>{html.escape(str(risk))}</td>
+                <td>{html.escape(str(summary.get('message', '')))}</td>
+                <td>{html.escape(str(remediation.get('fix', 'Review and validate.')))}</td>
+            </tr>
+            """
+
+    if not priority_rows:
+        priority_rows = """
         <tr>
-            <td>{html.escape(name)}</td>
-            <td class="{css_class}">{status}</td>
-            <td>{message}</td>
-            <td>{score}/10</td>
-            <td>{weight}</td>
-            <td>{risk}</td>
-            <td><strong>{action}</strong><br><br><strong>Why:</strong> {why}<br><br><strong>Recommended fix:</strong> {fix}</td>
+            <td colspan="5">No FAIL or REVIEW findings were detected.</td>
         </tr>
         """
 
+    category_sections = ""
+
+    for category in sorted(category_map.keys()):
+        checks = category_map[category]
+        rows = ""
+
+        for name, check in checks:
+            summary = check["summary"]
+            status = html.escape(str(summary.get("status", "REVIEW")))
+            message = html.escape(str(summary.get("message", "")))
+            score = html.escape(str(summary.get("score", "")))
+            weight = html.escape(str(summary.get("weight", 5)))
+            remediation = summary.get("remediation", {})
+            risk = html.escape(str(remediation.get("risk", "")))
+            why = html.escape(str(remediation.get("why", "")))
+            fix = html.escape(str(remediation.get("fix", "")))
+            action = html.escape(str(remediation.get("action", "")))
+            css_class = status.lower()
+
+            rows += f"""
+            <tr>
+                <td class="check-name">{html.escape(name)}</td>
+                <td><span class="badge {css_class}">{status}</span></td>
+                <td>{message}</td>
+                <td>{score}/10</td>
+                <td>{weight}</td>
+                <td>{risk}</td>
+                <td>
+                    <strong>{action}</strong><br>
+                    <span class="muted">Why:</span> {why}<br>
+                    <span class="muted">Fix:</span> {fix}
+                </td>
+            </tr>
+            """
+
+        category_sections += f"""
+        <section class="card">
+            <h2>{html.escape(category)}</h2>
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>Check</th>
+                        <th>Status</th>
+                        <th>Finding</th>
+                        <th>Score</th>
+                        <th>Weight</th>
+                        <th>Risk</th>
+                        <th>Remediation</th>
+                    </tr>
+                    {rows}
+                </table>
+            </div>
+        </section>
+        """
+
     raw_sections = ""
+
     for name, check in data["checks"].items():
         raw_sections += f"""
         <details>
             <summary>{html.escape(name)}</summary>
-            <pre>{html.escape(str(check["raw"]))}</pre>
+            <pre>{html.escape(str(check.get('raw', '')))}</pre>
         </details>
         """
 
-    system = data["system"]
-
     report = f"""
-    <html>
+    <!DOCTYPE html>
+    <html lang="en">
     <head>
+        <meta charset="utf-8">
         <title>Windows Security Audit Report</title>
         <style>
-            body {{
-                font-family: Arial, sans-serif;
-                margin: 40px;
-                color: #222;
+            :root {{
+                --bg: #f5f7fb;
+                --card: #ffffff;
+                --text: #1f2937;
+                --muted: #6b7280;
+                --border: #d8dee9;
+                --pass: #15803d;
+                --review: #b45309;
+                --fail: #b91c1c;
+                --good-bg: #dcfce7;
+                --fair-bg: #fef3c7;
+                --poor-bg: #fee2e2;
             }}
+
+            * {{
+                box-sizing: border-box;
+            }}
+
+            body {{
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family: Arial, Helvetica, sans-serif;
+                line-height: 1.45;
+            }}
+
+            header {{
+                background: #111827;
+                color: white;
+                padding: 28px 40px;
+            }}
+
+            header h1 {{
+                margin: 0 0 8px 0;
+            }}
+
+            header p {{
+                margin: 0;
+                color: #d1d5db;
+            }}
+
+            main {{
+                padding: 28px 40px;
+            }}
+
+            .grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 16px;
+                margin-bottom: 20px;
+            }}
+
+            .card {{
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 18px;
+                margin-bottom: 20px;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+            }}
+
+            .metric {{
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 18px;
+            }}
+
+            .metric .label,
+            .score-box .label {{
+                color: var(--muted);
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                font-weight: bold;
+            }}
+
+            .metric .value {{
+                font-size: 30px;
+                font-weight: bold;
+                margin-top: 6px;
+            }}
+
+            .score-box {{
+                border-radius: 14px;
+                padding: 22px;
+                border: 1px solid var(--border);
+            }}
+
+            .score-box.good {{
+                background: var(--good-bg);
+            }}
+
+            .score-box.fair {{
+                background: var(--fair-bg);
+            }}
+
+            .score-box.poor {{
+                background: var(--poor-bg);
+            }}
+
+            .score-number {{
+                font-size: 56px;
+                font-weight: bold;
+                line-height: 1;
+                margin-top: 10px;
+            }}
+
+            .score-subtitle {{
+                font-size: 18px;
+                color: #4b5563;
+                margin-top: 8px;
+            }}
+
+            .grade-description {{
+                margin-top: 8px;
+                font-size: 16px;
+                font-weight: bold;
+            }}
+
+            .grade-a {{
+                color: #15803d;
+            }}
+
+            .grade-b {{
+                color: #16a34a;
+            }}
+
+            .grade-c {{
+                color: #ca8a04;
+            }}
+
+            .grade-d {{
+                color: #b45309;
+            }}
+
+            .grade-f {{
+                color: #b91c1c;
+            }}
+
+            .table-wrap {{
+                overflow-x: auto;
+            }}
+
             table {{
                 border-collapse: collapse;
                 width: 100%;
-                margin-bottom: 25px;
+                min-width: 950px;
             }}
+
             th, td {{
-                border: 1px solid #ccc;
+                border-bottom: 1px solid var(--border);
                 padding: 10px;
                 text-align: left;
                 vertical-align: top;
             }}
+
             th {{
-                background-color: #f2f2f2;
+                background: #f3f4f6;
+                font-size: 13px;
+                text-transform: uppercase;
+                color: #374151;
             }}
-            .pass {{
-                color: green;
+
+            .badge {{
+                display: inline-block;
+                min-width: 72px;
+                text-align: center;
+                border-radius: 999px;
+                padding: 4px 9px;
+                color: white;
+                font-weight: bold;
+                font-size: 12px;
+            }}
+
+            .badge.pass {{
+                background: var(--pass);
+            }}
+
+            .badge.review {{
+                background: var(--review);
+            }}
+
+            .badge.fail {{
+                background: var(--fail);
+            }}
+
+            .check-name {{
                 font-weight: bold;
             }}
-            .fail {{
-                color: red;
+
+            .muted {{
+                color: var(--muted);
                 font-weight: bold;
             }}
-            .review {{
-                color: orange;
+
+            dl {{
+                display: grid;
+                grid-template-columns: 180px 1fr;
+                gap: 8px 16px;
+                margin: 0;
+            }}
+
+            dt {{
                 font-weight: bold;
+                color: var(--muted);
             }}
-            pre {{
-                white-space: pre-wrap;
-                background-color: #f8f8f8;
-                padding: 10px;
-                border: 1px solid #ddd;
-                overflow-x: auto;
+
+            dd {{
+                margin: 0;
             }}
+
             details {{
-                margin-bottom: 12px;
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                margin-bottom: 10px;
+                padding: 12px;
             }}
+
             summary {{
                 cursor: pointer;
                 font-weight: bold;
             }}
+
+            pre {{
+                white-space: pre-wrap;
+                overflow-x: auto;
+                background: #0f172a;
+                color: #e5e7eb;
+                padding: 14px;
+                border-radius: 8px;
+            }}
+
+            footer {{
+                color: var(--muted);
+                font-size: 12px;
+                padding: 0 40px 28px 40px;
+            }}
         </style>
     </head>
     <body>
-        <h1>Windows Security Audit Report</h1>
+        <header>
+            <h1>Windows Security Audit Report</h1>
+            <p>{html.escape(str(system['hostname']))} &bull; Scan time: {html.escape(str(system['scan_time']))}</p>
+        </header>
 
-        <h2>System Information</h2>
-        <table>
-            <tr><th>Hostname</th><td>{html.escape(str(system["hostname"]))}</td></tr>
-            <tr><th>OS</th><td>{html.escape(str(system["os"]))}</td></tr>
-            <tr><th>OS Version</th><td>{html.escape(str(system["os_version"]))}</td></tr>
-            <tr><th>Architecture</th><td>{html.escape(str(system["architecture"]))}</td></tr>
-            <tr><th>Scan Time</th><td>{html.escape(str(system["scan_time"]))}</td></tr>
-            <tr><th>Running as Admin</th><td>{html.escape(str(system["running_as_admin"]))}</td></tr>
-        </table>
+        <main>
+            <section class="score-box {score_band}">
+                <div class="label">Overall Security Grade</div>
+                <div class="score-number {grade_class}">{html.escape(str(overall_grade))}</div>
+                <div class="score-subtitle">{overall_score}/100 weighted score</div>
+                <div class="grade-description">{html.escape(str(grade_text))}</div>
+            </section>
 
-        <h2>Overall Weighted Score: {data["overall_score"]}/100</h2>
+            <div class="grid" style="margin-top: 20px;">
+                <div class="metric"><div class="label">Pass</div><div class="value">{status_counts.get('PASS', 0)}</div></div>
+                <div class="metric"><div class="label">Review</div><div class="value">{status_counts.get('REVIEW', 0)}</div></div>
+                <div class="metric"><div class="label">Fail</div><div class="value">{status_counts.get('FAIL', 0)}</div></div>
+                <div class="metric"><div class="label">High Risk Items</div><div class="value">{risk_counts.get('High', 0)}</div></div>
+            </div>
 
-        <h2>Security Summary</h2>
-        <table>
-            <tr>
-                <th>Check</th>
-                <th>Status</th>
-                <th>Message</th>
-                <th>Score</th>
-                <th>Weight</th>
-                <th>Risk</th>
-                <th>Remediation Guidance</th>
-            </tr>
-            {rows}
-        </table>
+            <section class="card">
+                <h2>System Information</h2>
+                <dl>
+                    <dt>Hostname</dt><dd>{html.escape(str(system['hostname']))}</dd>
+                    <dt>OS</dt><dd>{html.escape(str(system['os']))}</dd>
+                    <dt>OS Version</dt><dd>{html.escape(str(system['os_version']))}</dd>
+                    <dt>Architecture</dt><dd>{html.escape(str(system['architecture']))}</dd>
+                    <dt>Running as Admin</dt><dd>{html.escape(str(system['running_as_admin']))}</dd>
+                </dl>
+            </section>
 
-        <h2>Raw Audit Data</h2>
-        {raw_sections}
+            <section class="card">
+                <h2>Priority Findings</h2>
+                <p>These are the checks that need review or remediation first.</p>
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th>Check</th>
+                            <th>Status</th>
+                            <th>Risk</th>
+                            <th>Finding</th>
+                            <th>Recommended Fix</th>
+                        </tr>
+                        {priority_rows}
+                    </table>
+                </div>
+            </section>
+
+            {category_sections}
+
+            <section class="card">
+                <h2>Raw Audit Data</h2>
+                <p>Expand a section to view the raw PowerShell output used by the check.</p>
+                {raw_sections}
+            </section>
+        </main>
+
+        <footer>
+            Generated by Windows Security Audit Tool. Review findings against your organization's policy before making changes.
+        </footer>
     </body>
     </html>
     """
@@ -1407,13 +1779,77 @@ def save_to_html(data, filename):
         file.write(report)
 
 
+def get_letter_grade(score):
+    if score >= 90:
+        return "A"
+    if score >= 80:
+        return "B"
+    if score >= 70:
+        return "C"
+    if score >= 60:
+        return "D"
+    return "F"
+
+
+def print_console_summary(data):
+    overall_score = data.get("overall_score", 0)
+    overall_grade = data.get("overall_grade", get_letter_grade(overall_score))
+
+    print("")
+    print("=" * 60)
+    print("Windows Security Audit Summary")
+    print("=" * 60)
+    print(f"Overall Grade: {overall_grade}")
+    print(f"Weighted Score: {overall_score}/100")
+    print("")
+
+    grouped = {
+        "FAIL": [],
+        "REVIEW": [],
+        "PASS": [],
+    }
+
+    for check_name, check_data in data.get("checks", {}).items():
+        summary = check_data.get("summary", {})
+        status = summary.get("status", "REVIEW")
+        message = summary.get("message", "")
+        risk = summary.get("remediation", {}).get("risk", "Informational")
+
+        grouped.setdefault(status, []).append(
+            {
+                "name": check_name,
+                "message": message,
+                "risk": risk,
+            }
+        )
+
+    for status in ["FAIL", "REVIEW", "PASS"]:
+        findings = grouped.get(status, [])
+
+        if not findings:
+            continue
+
+        print(f"{status} ({len(findings)}):")
+
+        for finding in findings:
+            print(
+                f"  - [{finding['risk']}] "
+                f"{finding['name']}: {finding['message']}"
+            )
+
+        print("")
+
+    print("=" * 60)
+    print("")
+
+
 def main():
     args = parse_arguments()
 
     output_dir = Path(args.output)
     output_dir.mkdir(exist_ok=True)
 
-    if not any([args.html, args.csv, args.json]):
+    if not any([args.html, args.csv, args.json, args.summary]):
         args.html = True
         args.csv = True
         args.json = True
@@ -1480,10 +1916,12 @@ def main():
         )
 
     overall_score = round((weighted_score / max_weighted_score) * 100)
+    overall_grade = get_letter_grade(overall_score)
 
     report = {
         "system": get_system_info(),
         "overall_score": overall_score,
+        "overall_grade": overall_grade,
         "checks": checks,
     }
 
@@ -1495,6 +1933,9 @@ def main():
 
     if args.html:
         save_to_html(report, output_dir / "audit_report.html")
+
+    if args.summary:
+        print_console_summary(report)
 
     if not args.quiet:
         print("Audit complete.")
