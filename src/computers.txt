@@ -1,1 +1,1 @@
-MC11P-1.lbl.local
+add computers names here
