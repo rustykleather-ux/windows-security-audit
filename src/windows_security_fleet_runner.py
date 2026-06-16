@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument("--summary", action="store_true", help="Print fleet summary")
     parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
     parser.add_argument("--no-cleanup", action="store_true", help="Leave temporary files on remote computers")
+    parser.add_argument("--hunt", action="store_true", help="Enable hunting mode (more checks, longer runtime)")
     return parser.parse_args()
 
 
@@ -390,7 +391,7 @@ def save_dashboard(results, summary, path):
 
     with open(path, "w", encoding="utf-8") as file:
         file.write(dashboard)
-
+    
 
 def main():
     args = parse_args()
@@ -437,12 +438,15 @@ def main():
         for grade in ["A", "B", "C", "D", "F"]:
             print(f"Grade {grade}: {summary['grade_counts'].get(grade, 0)}")
 
+
+
     if not args.quiet:
         print("Fleet audit complete.")
         print(f"Dashboard: {(output_dir / 'fleet_dashboard.html').resolve()}")
         print(f"CSV: {(output_dir / 'fleet_results.csv').resolve()}")
         print(f"JSON: {(output_dir / 'fleet_results.json').resolve()}")
 
+    
 
 if __name__ == "__main__":
     main()

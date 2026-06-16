@@ -51,6 +51,7 @@ CHECK_WEIGHTS = {
     "Listening Connections": 7,
     "PowerShell Security": 8,
     "USB Storage": 5,
+    "Vulnerable Software Detection": 10,
 }
 
 
@@ -194,6 +195,11 @@ REMEDIATION_GUIDANCE = {
         "risk": "Low",
         "why": "USB storage can increase data loss and malware introduction risk.",
         "fix": "Use removable storage restrictions where required by policy, especially for sensitive workstations."
+    },
+    "Vulnerable Software Detection": {
+        "risk": "High",
+        "why": "Unsupported or commonly outdated software can expose known vulnerabilities that attackers routinely exploit.",
+        "fix": "Upgrade, patch, or remove flagged software. Validate exceptions with business owners and document compensating controls."
     },
 }
 
@@ -1255,9 +1261,33 @@ def audit_usb_storage():
 
     return check_result("PASS", "USB storage settings reviewed; no obvious issues found", 10), result["stdout"]
 
+def parse_version_parts(version):
+    parts = []
+
+    for piece in str(version).replace(",", ".").replace("-", ".").split("."):
+        digits = "".join(ch for ch in piece if ch.isdigit())
+
+        if digits:
+            parts.append(int(digits))
+
+    return parts
 
 
-def audit_threat_remote_access_tools():
+def version_less_than(version, minimum):
+    current = parse_version_parts(version)
+    required = parse_version_parts(minimum)
+
+    if not current:
+        return False
+
+    length = max(len(current), len(required))
+    current += [0] * (length - len(current))
+    required += [0] * (length - len(required))
+
+    return current < required
+
+
+def audit_vulnerable_software():
     command = (
         "$paths = @("
         "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',"
@@ -1265,213 +1295,119 @@ def audit_threat_remote_access_tools():
         "); "
         "$apps = Get-ItemProperty $paths -ErrorAction SilentlyContinue | "
         "Where-Object { $_.DisplayName } | "
-        "Select-Object DisplayName, DisplayVersion, Publisher, InstallLocation; "
-        "$services = Get-CimInstance Win32_Service | "
-        "Select-Object Name, DisplayName, State, StartMode, PathName; "
-        "$processes = Get-CimInstance Win32_Process | "
-        "Select-Object ProcessId, Name, ExecutablePath, CommandLine; "
-        "[PSCustomObject]@{ Apps=$apps; Services=$services; Processes=$processes } | "
-        "ConvertTo-Json -Depth 5"
+        "Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | "
+        "Sort-Object DisplayName; "
+        "$apps | ConvertTo-Json -Depth 4"
     )
 
-    result = run_powershell(command, timeout=90)
+    result = run_powershell(command, timeout=60)
     data = parse_json_output(result)
 
     if not data:
-        return check_result("REVIEW", "Remote access tool hunting data could not be collected", 5), result["stdout"]
-
-    remote_tools = [
-        "anydesk", "teamviewer", "screenconnect", "connectwise", "rustdesk",
-        "logmein", "splashtop", "vnc", "ultravnc", "tightvnc", "realvnc",
-        "remote utilities", "remotepc", "dwservice", "meshcentral", "atera",
-        "n-able", "ncentral", "bomgar", "beyondtrust"
-    ]
-
-    findings = []
-
-    for section_name in ["Apps", "Services", "Processes"]:
-        items = data.get(section_name) or []
-
-        if isinstance(items, dict):
-            items = [items]
-
-        for item in items:
-            combined = " ".join(str(value) for value in item.values() if value).lower()
-
-            for tool in remote_tools:
-                if tool in combined:
-                    display = item.get("DisplayName") or item.get("Name") or item.get("ExecutablePath") or "Unknown"
-                    findings.append(f"{section_name}: {display}")
-                    break
-
-    findings = sorted(set(findings))
-
-    if not findings:
         return check_result(
-            "PASS",
-            "No common remote access tools detected in software, services, or running processes",
-            10
+            "REVIEW",
+            "Installed software could not be reviewed for vulnerable or end-of-life applications",
+            5
         ), result["stdout"]
-
-    return check_result(
-        "REVIEW",
-        f"{len(findings)} remote access indicator(s) found: {', '.join(findings[:10])}",
-        5
-    ), result["stdout"]
-
-
-def audit_threat_suspicious_processes():
-    command = (
-        "$processes = Get-CimInstance Win32_Process | "
-        "Select-Object ProcessId, ParentProcessId, Name, ExecutablePath, CommandLine; "
-        "$processes | ConvertTo-Json -Depth 4"
-    )
-
-    result = run_powershell(command, timeout=90)
-    data = parse_json_output(result)
-
-    if not data:
-        return check_result("REVIEW", "Suspicious process hunting data could not be collected", 5), result["stdout"]
 
     if isinstance(data, dict):
         data = [data]
 
-    suspicious_patterns = [
-        "-enc", "-encodedcommand", "frombase64string", "downloadstring",
-        "invoke-webrequest", "iex ", "iwr ", "certutil", "bitsadmin",
-        "mshta", "regsvr32", "rundll32", "wscript", "cscript",
-        "\\appdata\\", "\\temp\\", "\\users\\public\\", "\\downloads\\",
-        ".ps1", ".vbs", ".js", ".jse", ".hta"
-    ]
-
     findings = []
 
-    for proc in data:
-        name = str(proc.get("Name", ""))
-        command_line = str(proc.get("CommandLine", ""))
-        path = str(proc.get("ExecutablePath", ""))
-        combined = f"{name} {command_line} {path}".lower()
+    eol_patterns = [
+        ("java 8", "Java 8 detected; review for end-of-life or required business exception"),
+        ("java(tm) 8", "Java 8 detected; review for end-of-life or required business exception"),
+        ("jre 8", "Java Runtime Environment 8 detected"),
+        ("jdk 8", "Java Development Kit 8 detected"),
+        ("office 2010", "Microsoft Office 2010 is end-of-life"),
+        ("office 2013", "Microsoft Office 2013 is end-of-life"),
+        ("office 2016", "Microsoft Office 2016 should be reviewed for lifecycle/support status"),
+        ("internet explorer", "Internet Explorer component/application detected"),
+        ("silverlight", "Microsoft Silverlight is end-of-life"),
+        ("flash player", "Adobe Flash Player is end-of-life"),
+        ("quicktime", "Apple QuickTime for Windows is unsupported"),
+        ("shockwave", "Adobe Shockwave is end-of-life"),
+        ("python 2.", "Python 2 is end-of-life"),
+        ("wireshark 2.", "Old Wireshark major version detected"),
+        ("wireshark 3.", "Older Wireshark major version detected; verify patch level"),
+    ]
 
-        if any(pattern in combined for pattern in suspicious_patterns):
-            pid = proc.get("ProcessId", "Unknown")
-            findings.append(f"{name} PID {pid}")
+    for app in data:
+        name = str(app.get("DisplayName", "")).strip()
+        version = str(app.get("DisplayVersion", "") or "").strip()
+        publisher = str(app.get("Publisher", "") or "").strip()
+        combined = f"{name} {version} {publisher}".lower()
+
+        for pattern, message in eol_patterns:
+            if pattern in combined:
+                findings.append(f"{name} {version}: {message}")
+                break
+
+        lowered_name = name.lower()
+
+        if "7-zip" in lowered_name and version_less_than(version, "23.01"):
+            findings.append(f"{name} {version}: 7-Zip version is older than 23.01; update recommended")
+
+        if "mozilla firefox" in lowered_name and version_less_than(version, "115"):
+            findings.append(f"{name} {version}: Firefox appears older than ESR 115; update recommended")
+
+        if "google chrome" in lowered_name and version_less_than(version, "120"):
+            findings.append(f"{name} {version}: Chrome appears older than version 120; update recommended")
+
+        if "microsoft edge" in lowered_name and version_less_than(version, "120"):
+            findings.append(f"{name} {version}: Edge appears older than version 120; update recommended")
+
+        if ("adobe acrobat reader" in lowered_name or "adobe reader" in lowered_name) and version_less_than(version, "23"):
+            findings.append(f"{name} {version}: Adobe Reader/Acrobat appears older than 2023 release family; update recommended")
 
     findings = sorted(set(findings))
 
     if not findings:
         return check_result(
             "PASS",
-            f"{len(data)} running process(es) reviewed; no suspicious command-line indicators found",
+            f"{len(data)} installed application(s) reviewed; no common vulnerable or end-of-life software indicators found",
             10
         ), result["stdout"]
 
-    return check_result(
-        "REVIEW",
-        f"{len(findings)} suspicious process indicator(s) found: {', '.join(findings[:10])}",
-        5
-    ), result["stdout"]
-
-
-def audit_threat_persistence_indicators():
-    command = (
-        "$tasks = Get-ScheduledTask | "
-        "Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' } | "
-        "Select-Object TaskName, TaskPath, State, Author, "
-        "@{Name='Execute';Expression={$_.Actions.Execute}}, "
-        "@{Name='Arguments';Expression={$_.Actions.Arguments}}; "
-        "$services = Get-CimInstance Win32_Service | "
-        "Where-Object { $_.StartMode -eq 'Auto' } | "
-        "Select-Object Name, DisplayName, State, StartMode, PathName; "
-        "$runPaths = @("
-        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',"
-        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce',"
-        "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',"
-        "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce',"
-        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run',"
-        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce'"
-        "); "
-        "$autoruns = foreach ($path in $runPaths) { "
-        "if (Test-Path $path) { "
-        "$props = Get-ItemProperty -Path $path; "
-        "$props.PSObject.Properties | "
-        "Where-Object { $_.Name -notlike 'PS*' } | "
-        "Select-Object @{Name='RegistryPath';Expression={$path}}, Name, Value "
-        "} "
-        "}; "
-        "[PSCustomObject]@{ Tasks=$tasks; Services=$services; Autoruns=$autoruns } | "
-        "ConvertTo-Json -Depth 5"
-    )
-
-    result = run_powershell(command, timeout=90)
-    data = parse_json_output(result)
-
-    if not data:
-        return check_result("REVIEW", "Persistence hunting data could not be collected", 5), result["stdout"]
-
-    suspicious_patterns = [
-        "powershell", "-enc", "-encodedcommand", "cmd.exe", "wscript",
-        "cscript", "mshta", "regsvr32", "rundll32", "certutil",
-        "bitsadmin", "\\appdata\\", "\\temp\\", "\\users\\public\\",
-        "\\downloads\\", ".ps1", ".vbs", ".js", ".jse", ".hta", ".scr"
+    high_confidence = [
+        finding for finding in findings
+        if any(term in finding.lower() for term in [
+            "end-of-life",
+            "unsupported",
+            "flash",
+            "silverlight",
+            "quicktime",
+            "python 2",
+            "office 2010",
+            "office 2013",
+        ])
     ]
 
-    findings = []
-
-    for section_name in ["Tasks", "Services", "Autoruns"]:
-        items = data.get(section_name) or []
-
-        if isinstance(items, dict):
-            items = [items]
-
-        for item in items:
-            combined = " ".join(str(value) for value in item.values() if value).lower()
-
-            if any(pattern in combined for pattern in suspicious_patterns):
-                display = item.get("TaskName") or item.get("DisplayName") or item.get("Name") or item.get("Value") or "Unknown"
-                findings.append(f"{section_name}: {display}")
-
-    findings = sorted(set(findings))
-
-    if not findings:
+    if high_confidence:
         return check_result(
-            "PASS",
-            "No suspicious persistence indicators found across tasks, services, or autoruns",
-            10
+            "FAIL",
+            f"{len(findings)} vulnerable/end-of-life software indicator(s) found: {', '.join(findings[:10])}",
+            0
         ), result["stdout"]
 
     return check_result(
         "REVIEW",
-        f"{len(findings)} persistence indicator(s) found: {', '.join(findings[:10])}",
+        f"{len(findings)} software version indicator(s) should be reviewed: {', '.join(findings[:10])}",
         5
     ), result["stdout"]
 
 
-def save_to_json(data, filename):
-    with open(filename, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4)
-
-
-def save_to_csv(data, filename):
-    flat = {
-        "hostname": data["system"]["hostname"],
-        "scan_time": data["system"]["scan_time"],
-        "running_as_admin": data["system"]["running_as_admin"],
-        "overall_score": data["overall_score"],
-        "overall_grade": data.get("overall_grade", get_letter_grade(data.get("overall_score", 0))),
-    }
-
-    for check_name, check_data in data["checks"].items():
-        flat[f"{check_name}_status"] = check_data["summary"]["status"]
-        flat[f"{check_name}_message"] = check_data["summary"]["message"]
-        flat[f"{check_name}_score"] = check_data["summary"]["score"]
-        flat[f"{check_name}_weight"] = check_data["summary"]["weight"]
-        flat[f"{check_name}_risk"] = check_data["summary"].get("remediation", {}).get("risk", "")
-        flat[f"{check_name}_recommended_fix"] = check_data["summary"].get("remediation", {}).get("fix", "")
-
-    with open(filename, "w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=flat.keys())
-        writer.writeheader()
-        writer.writerow(flat)
+def get_letter_grade(score):
+    if score >= 90:
+        return "A"
+    if score >= 80:
+        return "B"
+    if score >= 70:
+        return "C"
+    if score >= 60:
+        return "D"
+    return "F"
 
 
 def get_score_band(score):
@@ -1488,6 +1424,9 @@ def get_check_category(check_name):
             "Threat Hunt - Remote Access Tools",
             "Threat Hunt - Suspicious Processes",
             "Threat Hunt - Persistence Indicators",
+        ],
+        "Vulnerability Intelligence": [
+            "Vulnerable Software Detection",
         ],
         "Endpoint Protection": [
             "Microsoft Defender",
@@ -1538,6 +1477,37 @@ def get_check_category(check_name):
             return category
 
     return "Other"
+
+
+def save_to_json(data, filename):
+    with open(filename, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
+
+
+def save_to_csv(data, filename):
+    flat = {
+        "hostname": data["system"]["hostname"],
+        "scan_time": data["system"]["scan_time"],
+        "running_as_admin": data["system"]["running_as_admin"],
+        "overall_score": data["overall_score"],
+        "overall_grade": data.get("overall_grade", get_letter_grade(data.get("overall_score", 0))),
+    }
+
+    for check_name, check_data in data["checks"].items():
+        summary = check_data["summary"]
+        remediation = summary.get("remediation", {})
+
+        flat[f"{check_name}_status"] = summary.get("status", "")
+        flat[f"{check_name}_message"] = summary.get("message", "")
+        flat[f"{check_name}_score"] = summary.get("score", "")
+        flat[f"{check_name}_weight"] = summary.get("weight", "")
+        flat[f"{check_name}_risk"] = remediation.get("risk", "")
+        flat[f"{check_name}_recommended_fix"] = remediation.get("fix", "")
+
+    with open(filename, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=flat.keys())
+        writer.writeheader()
+        writer.writerow(flat)
 
 
 def save_to_html(data, filename):
@@ -1682,9 +1652,7 @@ def save_to_html(data, filename):
                 --poor-bg: #fee2e2;
             }}
 
-            * {{
-                box-sizing: border-box;
-            }}
+            * {{ box-sizing: border-box; }}
 
             body {{
                 margin: 0;
@@ -1700,18 +1668,9 @@ def save_to_html(data, filename):
                 padding: 28px 40px;
             }}
 
-            header h1 {{
-                margin: 0 0 8px 0;
-            }}
-
-            header p {{
-                margin: 0;
-                color: #d1d5db;
-            }}
-
-            main {{
-                padding: 28px 40px;
-            }}
+            header h1 {{ margin: 0 0 8px 0; }}
+            header p {{ margin: 0; color: #d1d5db; }}
+            main {{ padding: 28px 40px; }}
 
             .grid {{
                 display: grid;
@@ -1757,17 +1716,9 @@ def save_to_html(data, filename):
                 border: 1px solid var(--border);
             }}
 
-            .score-box.good {{
-                background: var(--good-bg);
-            }}
-
-            .score-box.fair {{
-                background: var(--fair-bg);
-            }}
-
-            .score-box.poor {{
-                background: var(--poor-bg);
-            }}
+            .score-box.good {{ background: var(--good-bg); }}
+            .score-box.fair {{ background: var(--fair-bg); }}
+            .score-box.poor {{ background: var(--poor-bg); }}
 
             .score-number {{
                 font-size: 56px;
@@ -1788,29 +1739,13 @@ def save_to_html(data, filename):
                 font-weight: bold;
             }}
 
-            .grade-a {{
-                color: #15803d;
-            }}
+            .grade-a {{ color: #15803d; }}
+            .grade-b {{ color: #16a34a; }}
+            .grade-c {{ color: #ca8a04; }}
+            .grade-d {{ color: #b45309; }}
+            .grade-f {{ color: #b91c1c; }}
 
-            .grade-b {{
-                color: #16a34a;
-            }}
-
-            .grade-c {{
-                color: #ca8a04;
-            }}
-
-            .grade-d {{
-                color: #b45309;
-            }}
-
-            .grade-f {{
-                color: #b91c1c;
-            }}
-
-            .table-wrap {{
-                overflow-x: auto;
-            }}
+            .table-wrap {{ overflow-x: auto; }}
 
             table {{
                 border-collapse: collapse;
@@ -1843,26 +1778,12 @@ def save_to_html(data, filename):
                 font-size: 12px;
             }}
 
-            .badge.pass {{
-                background: var(--pass);
-            }}
+            .badge.pass {{ background: var(--pass); }}
+            .badge.review {{ background: var(--review); }}
+            .badge.fail {{ background: var(--fail); }}
 
-            .badge.review {{
-                background: var(--review);
-            }}
-
-            .badge.fail {{
-                background: var(--fail);
-            }}
-
-            .check-name {{
-                font-weight: bold;
-            }}
-
-            .muted {{
-                color: var(--muted);
-                font-weight: bold;
-            }}
+            .check-name {{ font-weight: bold; }}
+            .muted {{ color: var(--muted); font-weight: bold; }}
 
             dl {{
                 display: grid;
@@ -1871,14 +1792,8 @@ def save_to_html(data, filename):
                 margin: 0;
             }}
 
-            dt {{
-                font-weight: bold;
-                color: var(--muted);
-            }}
-
-            dd {{
-                margin: 0;
-            }}
+            dt {{ font-weight: bold; color: var(--muted); }}
+            dd {{ margin: 0; }}
 
             details {{
                 background: white;
@@ -1978,18 +1893,6 @@ def save_to_html(data, filename):
         file.write(report)
 
 
-def get_letter_grade(score):
-    if score >= 90:
-        return "A"
-    if score >= 80:
-        return "B"
-    if score >= 70:
-        return "C"
-    if score >= 60:
-        return "D"
-    return "F"
-
-
 def print_console_summary(data):
     overall_score = data.get("overall_score", 0)
     overall_grade = data.get("overall_grade", get_letter_grade(overall_score))
@@ -2069,6 +1972,7 @@ def main():
         "Secure Boot / TPM": audit_secure_boot_tpm,
         "Event Logging": audit_event_logging,
         "Installed Software": audit_installed_software,
+        "Vulnerable Software Detection": audit_vulnerable_software,
         "Scheduled Tasks": audit_scheduled_tasks,
         "Autorun Registry Keys": audit_autoruns_registry,
         "Startup Folders": audit_startup_folders,
@@ -2086,12 +1990,7 @@ def main():
         "USB Storage": audit_usb_storage,
     }
 
-    if args.hunt:
-        audit_functions.update({
-            "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
-            "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
-            "Threat Hunt - Persistence Indicators": audit_threat_persistence_indicators,
-        })
+    # Threat hunting temporarily disabled due to performance concerns and reliability of indicators in a general audit context
 
     for name, function in audit_functions.items():
         if not args.quiet:
@@ -2103,7 +2002,10 @@ def main():
             summary = check_result("REVIEW", f"Check failed unexpectedly: {e}", 5)
             raw = str(e)
 
-        checks[name] = {"summary": summary, "raw": raw}
+        checks[name] = {
+            "summary": summary,
+            "raw": raw,
+        }
 
     weighted_score = 0
     max_weighted_score = 0
