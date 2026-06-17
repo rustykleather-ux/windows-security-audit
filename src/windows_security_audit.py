@@ -55,6 +55,50 @@ CHECK_WEIGHTS = {
     "Threat Hunt - Remote Access Tools": 12,
     "Threat Hunt - Suspicious Processes": 12,
     "Threat Hunt - Persistence Indicators": 12,
+    "Threat Hunt - Network Connections": 15,
+}
+
+MITRE_MAPPINGS = {
+    "Threat Hunt - Suspicious Processes": [
+        ("T1059", "Command and Scripting Interpreter"),
+        ("T1218", "Signed Binary Proxy Execution"),
+        ("T1105", "Ingress Tool Transfer"),
+    ],
+
+    "Threat Hunt - Persistence Indicators": [
+        ("T1053", "Scheduled Task/Job"),
+        ("T1547", "Boot or Logon Autostart Execution"),
+    ],
+
+    "Threat Hunt - Remote Access Tools": [
+        ("T1219", "Remote Access Software"),
+    ],
+
+    "Threat Hunt - Network Connections": [
+        ("T1071", "Application Layer Protocol"),
+        ("T1095", "Non-Application Layer Protocol"),
+        ("T1105", "Ingress Tool Transfer"),
+    ],
+
+    "PowerShell Security": [
+        ("T1059.001", "PowerShell"),
+    ],
+
+    "Listening Connections": [
+        ("T1046", "Network Service Discovery"),
+    ],
+
+    "Scheduled Tasks": [
+        ("T1053", "Scheduled Task/Job"),
+    ],
+
+    "Autorun Registry Keys": [
+        ("T1547.001", "Registry Run Keys / Startup Folder"),
+    ],
+
+    "Startup Folders": [
+        ("T1547.001", "Registry Run Keys / Startup Folder"),
+    ],
 }
 
 
@@ -214,9 +258,21 @@ REMEDIATION_GUIDANCE = {
         "risk": "High",
         "why": "The presence of suspicious processes can indicate malicious activity or unauthorized access.",
         "fix": "Investigate the source and purpose of any flagged suspicious processes. Remove unauthorized instances and implement appropriate controls."
-    }
-    
+    },
+    "Threat Hunt - Network Connections": {
+        "risk": "High",
+        "why": "Unexpected external network connections may indicate command-and-control activity or unauthorized remote access.",
+        "fix": "Review destination IPs, associated processes, firewall rules, and business justification."
+    },
+    "Threat Hunt - Persistence Indicators": {
+    "risk": "High",
+    "why": "Persistence mechanisms can allow unauthorized tools or malware to survive reboot and user logon.",
+    "fix": "Review flagged scheduled tasks, autoruns, services, and startup entries. Remove unauthorized persistence mechanisms."
+},
 }
+
+def get_mitre_mapping(check_name):
+    return MITRE_MAPPINGS.get(check_name, [])
 
 
 def get_remediation(check_name, status):
@@ -1440,6 +1496,7 @@ def get_check_category(check_name):
             "Threat Hunt - Remote Access Tools",
             "Threat Hunt - Suspicious Processes",
             "Threat Hunt - Persistence Indicators",
+            "Threat Hunt - Network Connections",
         ],
         "Vulnerability Intelligence": [
             "Vulnerable Software Detection",
@@ -1512,6 +1569,7 @@ def save_to_csv(data, filename):
     for check_name, check_data in data["checks"].items():
         summary = check_data["summary"]
         remediation = summary.get("remediation", {})
+        check_data["summary"]["mitre"] = get_mitre_mapping(check_name)
 
         flat[f"{check_name}_status"] = summary.get("status", "")
         flat[f"{check_name}_message"] = summary.get("message", "")
@@ -1583,6 +1641,8 @@ def save_to_html(data, filename, include_raw=True):
         </tr>
         """
     
+        category_sections = ""
+
     category_sections = ""
 
     for category in sorted(category_map.keys()):
@@ -1597,6 +1657,11 @@ def save_to_html(data, filename, include_raw=True):
             weight = html.escape(str(summary.get("weight", 5)))
             remediation = summary.get("remediation", {})
             risk = html.escape(str(remediation.get("risk", "")))
+            mitre_entries = summary.get("mitre", [])
+            mitre_text = "<br>".join(
+                f"{technique}: {technique_name}"
+                for technique, technique_name in mitre_entries
+            )
             why = html.escape(str(remediation.get("why", "")))
             fix = html.escape(str(remediation.get("fix", "")))
             action = html.escape(str(remediation.get("action", "")))
@@ -1610,6 +1675,7 @@ def save_to_html(data, filename, include_raw=True):
                 <td>{score}/10</td>
                 <td>{weight}</td>
                 <td>{risk}</td>
+                <td>{mitre_text}</td>
                 <td>
                     <strong>{action}</strong><br>
                     <span class="muted">Why:</span> {why}<br>
@@ -1618,25 +1684,26 @@ def save_to_html(data, filename, include_raw=True):
             </tr>
             """
 
-    category_sections += f"""
-    <section class="card">
-        <h2>{html.escape(category)}</h2>
-        <div class="table-wrap">
-            <table>
-                <tr>
-                    <th>Check</th>
-                    <th>Status</th>
-                    <th>Finding</th>
-                    <th>Score</th>
-                    <th>Weight</th>
-                    <th>Risk</th>
-                    <th>Remediation</th>
-                </tr>
-                {rows}
-            </table>
-        </div>
-    </section>
-    """
+        category_sections += f"""
+        <section class="card">
+            <h2>{html.escape(category)}</h2>
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>Check</th>
+                        <th>Status</th>
+                        <th>Finding</th>
+                        <th>Score</th>
+                        <th>Weight</th>
+                        <th>Risk</th>
+                        <th>MITRE ATT&CK</th>
+                        <th>Remediation</th>
+                    </tr>
+                    {rows}
+                </table>
+            </div>
+        </section>
+        """
 
     raw_sections = ""
 
@@ -2007,6 +2074,9 @@ def print_console_summary(data):
         status = summary.get("status", "REVIEW")
         message = summary.get("message", "")
         risk = summary.get("remediation", {}).get("risk", "Informational")
+       
+
+         
 
         grouped.setdefault(status, []).append(
             {
@@ -2205,6 +2275,67 @@ def save_to_pdf(html_file, pdf_file):
         timeout=60,
     )
 
+def audit_threat_network_connections():
+    command = (
+        "Get-NetTCPConnection -State Established | "
+        "Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,OwningProcess | "
+        "ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Unable to collect network connections",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_ports = {
+        4444, 5555, 8080, 8443, 1337, 9001
+    }
+
+    findings = []
+
+    for conn in data:
+        remote = str(conn.get("RemoteAddress", ""))
+
+        if (
+            remote.startswith("127.")
+            or remote.startswith("10.")
+            or remote.startswith("192.168.")
+            or remote.startswith("172.16.")
+            or remote == "::1"
+        ):
+            continue
+
+        try:
+            port = int(conn.get("RemotePort", 0))
+        except:
+            port = 0
+
+        if port in suspicious_ports:
+            findings.append(
+                f"{remote}:{port} (PID {conn.get('OwningProcess')})"
+            )
+
+    if not findings:
+        return check_result(
+            "PASS",
+            "No suspicious external network connections detected",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(findings)} suspicious connection(s) detected",
+        5
+    ), "\n".join(findings)
+
 def main():
     args = parse_arguments()
 
@@ -2256,6 +2387,7 @@ def main():
         "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
         "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
         "Threat Hunt - Persistence Indicators": audit_threat_persistence_indicators,
+        "Threat Hunt - Network Connections": audit_threat_network_connections,
     })
 
 
