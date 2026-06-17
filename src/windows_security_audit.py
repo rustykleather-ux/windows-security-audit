@@ -53,6 +53,7 @@ CHECK_WEIGHTS = {
     "USB Storage": 5,
     "Vulnerable Software Detection": 10,
     "Threat Hunt - Remote Access Tools": 12,
+    "Threat Hunt - Suspicious Processes": 12,
 }
 
 
@@ -207,7 +208,13 @@ REMEDIATION_GUIDANCE = {
         "risk": "High",
         "why": "The presence of remote access tools can indicate unauthorized access or persistence.",
         "fix": "Investigate the source and purpose of any flagged remote access tools. Remove unauthorized instances and implement appropriate controls."
+    },
+    "Threat Hunt - Suspicious Processes": {
+        "risk": "High",
+        "why": "The presence of suspicious processes can indicate malicious activity or unauthorized access.",
+        "fix": "Investigate the source and purpose of any flagged suspicious processes. Remove unauthorized instances and implement appropriate controls."
     }
+    
 }
 
 
@@ -2023,6 +2030,73 @@ def audit_threat_remote_access_tools():
         5
     ), result["stdout"]
 
+def audit_threat_suspicious_processes():
+    command = (
+        "Get-CimInstance Win32_Process | "
+        "Select-Object ProcessId, Name, CommandLine | "
+        "ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Unable to collect process information",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_patterns = [
+        "powershell -enc",
+        "powershell.exe -enc",
+        "-encodedcommand",
+        "frombase64string",
+        "downloadstring",
+        "invoke-webrequest",
+        "iex ",
+        "iwr ",
+        "certutil",
+        "bitsadmin",
+        "mshta",
+        "rundll32",
+        "regsvr32",
+        "wscript",
+        "cscript",
+    ]
+
+    findings = []
+
+    for proc in data:
+        name = str(proc.get("Name", ""))
+        cmdline = str(proc.get("CommandLine", "") or "")
+
+        combined = f"{name} {cmdline}".lower()
+
+        for pattern in suspicious_patterns:
+            if pattern in combined:
+                findings.append(
+                    f"{name} (PID {proc.get('ProcessId')})"
+                )
+                break
+
+    findings = sorted(set(findings))
+
+    if not findings:
+        return check_result(
+            "PASS",
+            "No suspicious process indicators detected",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(findings)} suspicious process indicator(s) found: {', '.join(findings[:10])}",
+        5
+    ), result["stdout"]
 
 def main():
     args = parse_arguments()
@@ -2073,6 +2147,7 @@ def main():
     if args.hunt:
         audit_functions.update({
         "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
+        "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
     })
 
 
