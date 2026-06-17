@@ -52,6 +52,7 @@ CHECK_WEIGHTS = {
     "PowerShell Security": 8,
     "USB Storage": 5,
     "Vulnerable Software Detection": 10,
+    "Threat Hunt - Remote Access Tools": 12,
 }
 
 
@@ -200,7 +201,13 @@ REMEDIATION_GUIDANCE = {
         "risk": "High",
         "why": "Unsupported or commonly outdated software can expose known vulnerabilities that attackers routinely exploit.",
         "fix": "Upgrade, patch, or remove flagged software. Validate exceptions with business owners and document compensating controls."
+       
     },
+    "Threat Hunt - Remote Access Tools": {
+        "risk": "High",
+        "why": "The presence of remote access tools can indicate unauthorized access or persistence.",
+        "fix": "Investigate the source and purpose of any flagged remote access tools. Remove unauthorized instances and implement appropriate controls."
+    }
 }
 
 
@@ -1944,6 +1951,78 @@ def print_console_summary(data):
     print("=" * 60)
     print("")
 
+def audit_threat_remote_access_tools():
+    command = (
+        "$paths = @("
+        "'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',"
+        "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'"
+        "); "
+        "$apps = Get-ItemProperty $paths -ErrorAction SilentlyContinue | "
+        "Where-Object { $_.DisplayName } | "
+        "Select-Object DisplayName, DisplayVersion, Publisher, InstallLocation; "
+        "$apps | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "REVIEW",
+            "Remote access software inventory could not be collected",
+            5
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    remote_tools = [
+        "anydesk",
+        "rustdesk",
+        "teamviewer",
+        "screenconnect",
+        "connectwise",
+        "remote utilities",
+        "ultravnc",
+        "tightvnc",
+        "realvnc",
+        "logmein",
+        "splashtop",
+        "bomgar",
+        "beyondtrust",
+        "dwservice",
+        "meshcentral",
+        "atera",
+    ]
+
+    findings = []
+
+    for app in data:
+        name = str(app.get("DisplayName", "") or "")
+        publisher = str(app.get("Publisher", "") or "")
+        install_location = str(app.get("InstallLocation", "") or "")
+        combined = f"{name} {publisher} {install_location}".lower()
+
+        for tool in remote_tools:
+            if tool in combined:
+                findings.append(name or tool)
+                break
+
+    findings = sorted(set(findings))
+
+    if not findings:
+        return check_result(
+            "PASS",
+            "No common remote access tools detected in installed software",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(findings)} remote access tool indicator(s) found: {', '.join(findings[:10])}",
+        5
+    ), result["stdout"]
+
 
 def main():
     args = parse_arguments()
@@ -1956,6 +2035,7 @@ def main():
         args.csv = True
         args.json = True
 
+    
     checks = {}
 
     audit_functions = {
@@ -1988,7 +2068,13 @@ def main():
         "Listening Connections": audit_listening_connections,
         "PowerShell Security": audit_powershell_security,
         "USB Storage": audit_usb_storage,
+        
     }
+    if args.hunt:
+        audit_functions.update({
+        "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
+    })
+
 
     # Threat hunting temporarily disabled due to performance concerns and reliability of indicators in a general audit context
 
