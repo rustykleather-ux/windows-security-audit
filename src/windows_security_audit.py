@@ -54,6 +54,7 @@ CHECK_WEIGHTS = {
     "Vulnerable Software Detection": 10,
     "Threat Hunt - Remote Access Tools": 12,
     "Threat Hunt - Suspicious Processes": 12,
+    "Threat Hunt - Persistence Indicators": 12,
 }
 
 
@@ -1906,6 +1907,74 @@ def save_to_html(data, filename):
     with open(filename, "w", encoding="utf-8") as file:
         file.write(report)
 
+def audit_threat_persistence_indicators():
+    command = (
+        "$tasks = Get-ScheduledTask | "
+        "Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' } | "
+        "Select-Object TaskName, TaskPath, State, Author, "
+        "@{Name='Execute';Expression={$_.Actions.Execute}}, "
+        "@{Name='Arguments';Expression={$_.Actions.Arguments}}; "
+        "$tasks | ConvertTo-Json -Depth 4"
+    )
+
+    result = run_powershell(command, timeout=60)
+    data = parse_json_output(result)
+
+    if not data:
+        return check_result(
+            "PASS",
+            "No non-Microsoft scheduled tasks detected",
+            10
+        ), result["stdout"]
+
+    if isinstance(data, dict):
+        data = [data]
+
+    suspicious_keywords = [
+        "powershell",
+        "-enc",
+        "-encodedcommand",
+        "cmd.exe",
+        "wscript",
+        "cscript",
+        "mshta",
+        "regsvr32",
+        "rundll32",
+        "certutil",
+        "bitsadmin",
+        "appdata",
+        "temp",
+        "public",
+        "downloads",
+    ]
+
+    findings = []
+
+    for task in data:
+        combined = " ".join([
+            str(task.get("TaskName", "")),
+            str(task.get("TaskPath", "")),
+            str(task.get("Author", "")),
+            str(task.get("Execute", "")),
+            str(task.get("Arguments", "")),
+        ]).lower()
+
+        if any(keyword in combined for keyword in suspicious_keywords):
+            findings.append(f"{task.get('TaskPath', '')}{task.get('TaskName', '')}")
+
+    if not findings:
+        return check_result(
+            "PASS",
+            f"{len(data)} non-Microsoft scheduled task(s) reviewed; no suspicious persistence indicators found",
+            10
+        ), result["stdout"]
+
+    return check_result(
+        "REVIEW",
+        f"{len(findings)} suspicious persistence indicator(s) found: {', '.join(findings[:10])}",
+        5
+    ), result["stdout"]
+
 
 def print_console_summary(data):
     overall_score = data.get("overall_score", 0)
@@ -2148,6 +2217,7 @@ def main():
         audit_functions.update({
         "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
         "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
+        "Threat Hunt - Persistence Indicators": audit_threat_persistence_indicators,
     })
 
 
