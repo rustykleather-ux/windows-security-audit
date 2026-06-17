@@ -247,6 +247,7 @@ def parse_arguments():
     parser.add_argument("--summary", action="store_true", help="Print a concise console summary after the scan")
     parser.add_argument("--hunt", action="store_true", help="Enable threat hunting checks")
     parser.add_argument("--output", default="audit_output", help="Output directory")
+    parser.add_argument("--pdf", action="store_true", help="Generate PDF report")
     return parser.parse_args()
 
 
@@ -1525,11 +1526,12 @@ def save_to_csv(data, filename):
         writer.writerow(flat)
 
 
-def save_to_html(data, filename):
+def save_to_html(data, filename, include_raw=True):
     system = data["system"]
     overall_score = data.get("overall_score", 0)
     overall_grade = data.get("overall_grade", get_letter_grade(overall_score))
     score_band = get_score_band(overall_score)
+
 
     grade_class = {
         "A": "grade-a",
@@ -1580,7 +1582,7 @@ def save_to_html(data, filename):
             <td colspan="5">No FAIL or REVIEW findings were detected.</td>
         </tr>
         """
-
+    
     category_sections = ""
 
     for category in sorted(category_map.keys()):
@@ -1616,25 +1618,25 @@ def save_to_html(data, filename):
             </tr>
             """
 
-        category_sections += f"""
-        <section class="card">
-            <h2>{html.escape(category)}</h2>
-            <div class="table-wrap">
-                <table>
-                    <tr>
-                        <th>Check</th>
-                        <th>Status</th>
-                        <th>Finding</th>
-                        <th>Score</th>
-                        <th>Weight</th>
-                        <th>Risk</th>
-                        <th>Remediation</th>
-                    </tr>
-                    {rows}
-                </table>
-            </div>
-        </section>
-        """
+    category_sections += f"""
+    <section class="card">
+        <h2>{html.escape(category)}</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Check</th>
+                    <th>Status</th>
+                    <th>Finding</th>
+                    <th>Score</th>
+                    <th>Weight</th>
+                    <th>Risk</th>
+                    <th>Remediation</th>
+                </tr>
+                {rows}
+            </table>
+        </div>
+    </section>
+    """
 
     raw_sections = ""
 
@@ -1646,11 +1648,22 @@ def save_to_html(data, filename):
         </details>
         """
 
+    raw_audit_section = ""
+
+    if include_raw:
+        raw_audit_section = f"""
+        <section class="card">
+            <h2>Raw Audit Data</h2>
+            <p>Expand a section to view the raw PowerShell output used by the check.</p>
+            {raw_sections}
+        </section>
+        """
+
     report = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
+            <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8">
         <title>Windows Security Audit Report</title>
         <style>
             :root {{
@@ -1889,12 +1902,7 @@ def save_to_html(data, filename):
             </section>
 
             {category_sections}
-
-            <section class="card">
-                <h2>Raw Audit Data</h2>
-                <p>Expand a section to view the raw PowerShell output used by the check.</p>
-                {raw_sections}
-            </section>
+            {raw_audit_section}
         </main>
 
         <footer>
@@ -2167,18 +2175,48 @@ def audit_threat_suspicious_processes():
         5
     ), result["stdout"]
 
+def save_to_pdf(html_file, pdf_file):
+    edge_paths = [
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    ]
+
+    edge = None
+
+    for path in edge_paths:
+        if Path(path).exists():
+            edge = path
+            break
+
+    if not edge:
+        raise FileNotFoundError("Microsoft Edge was not found. Cannot generate PDF.")
+
+    subprocess.run(
+        [
+            edge,
+            "--headless",
+            "--disable-gpu",
+            f"--print-to-pdf={pdf_file}",
+            str(html_file),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
 def main():
     args = parse_arguments()
 
     output_dir = Path(args.output)
     output_dir.mkdir(exist_ok=True)
 
-    if not any([args.html, args.csv, args.json, args.summary]):
+    if not any([args.html, args.csv, args.json, args.pdf, args.summary]):
         args.html = True
         args.csv = True
         args.json = True
-
-    
+        args.pdf = True
+        
     checks = {}
 
     audit_functions = {
@@ -2221,8 +2259,7 @@ def main():
     })
 
 
-    # Threat hunting temporarily disabled due to performance concerns and reliability of indicators in a general audit context
-
+    
     for name, function in audit_functions.items():
         if not args.quiet:
             print(f"Running check: {name}")
@@ -2270,8 +2307,23 @@ def main():
     if args.csv:
         save_to_csv(report, output_dir / "audit_results.csv")
 
+    html_path = output_dir / "audit_report.html"
+    executive_html_path = output_dir / "audit_report_executive.html"
+    pdf_path = output_dir / "audit_report.pdf"
+
     if args.html:
-        save_to_html(report, output_dir / "audit_report.html")
+        save_to_html(report, html_path, include_raw=True)
+
+    if args.pdf:
+        try:
+            save_to_html(report, executive_html_path, include_raw=False)
+            save_to_pdf(
+                executive_html_path.resolve(),
+                pdf_path.resolve()
+            )
+            print(f"PDF created: {pdf_path.resolve()}")
+        except Exception as e:
+            print(f"PDF export failed: {e}")
 
     if args.summary:
         print_console_summary(report)
@@ -2280,7 +2332,6 @@ def main():
         print("Audit complete.")
         print(f"Overall score: {overall_score}/100")
         print(f"Reports saved in: {output_dir.resolve()}")
-
 
 if __name__ == "__main__":
     main()
