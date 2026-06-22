@@ -1673,6 +1673,8 @@ def save_to_html(data, filename, include_raw=True):
             action = html.escape(str(remediation.get("action", "")))
             css_class = status.lower()
 
+            
+
             rows += f"""
             <tr>
                 <td class="check-name">{html.escape(name)}</td>
@@ -1840,11 +1842,14 @@ def save_to_html(data, filename, include_raw=True):
                 font-weight: bold;
             }}
 
+            
             .grade-a {{ color: #15803d; }}
             .grade-b {{ color: #16a34a; }}
             .grade-c {{ color: #ca8a04; }}
             .grade-d {{ color: #b45309; }}
             .grade-f {{ color: #b91c1c; }}
+
+                
 
             .table-wrap {{ overflow-x: auto; }}
 
@@ -2496,11 +2501,10 @@ def run_fleet_scan(fleet_file):
             })
 
     return results
-
 def save_fleet_dashboard(results, filename):
+
     total = len(results)
     audited = sum(1 for r in results if r.get("status") == "AUDITED")
-    online = sum(1 for r in results if r.get("status") == "ONLINE")
     failed = sum(1 for r in results if r.get("status") == "FAILED")
 
     scores = [
@@ -2511,13 +2515,15 @@ def save_fleet_dashboard(results, filename):
 
     average_score = round(sum(scores) / len(scores)) if scores else 0
     organization_grade = get_letter_grade(average_score) if scores else "N/A"
+
+    # Grade Distribution
     a_count = sum(1 for r in results if r.get("grade") == "A")
     b_count = sum(1 for r in results if r.get("grade") == "B")
     c_count = sum(1 for r in results if r.get("grade") == "C")
     d_count = sum(1 for r in results if r.get("grade") == "D")
     f_count = sum(1 for r in results if r.get("grade") == "F")
-    
 
+    # Most Common Findings
     finding_counts = {
         "Firewall Disabled": 0,
         "Defender Disabled": 0,
@@ -2553,51 +2559,67 @@ def save_fleet_dashboard(results, filename):
     if not common_findings_rows:
         common_findings_rows = """
         <tr>
-            <td colspan="2">No common findings detected across audited systems.</td>
+            <td colspan="2">No common findings detected.</td>
         </tr>
         """
 
-    # Sort worst systems first
+    # Sort Worst Systems First
     ranked_results = sorted(
         results,
-        key=lambda x: x.get("score", 0) if x.get("status") == "AUDITED" else -1
+        key=lambda x: x.get("score", 0)
+        if x.get("status") == "AUDITED"
+        else -1
     )
 
-    # TOP RISK SYSTEMS
+    # Top Risk Systems
     top_risk_rows = ""
 
     for result in ranked_results[:10]:
+
         if result.get("status") != "AUDITED":
             continue
 
-        top_host = html.escape(str(result.get("host", "")))
-        top_grade = html.escape(str(result.get("grade", "-")))
-        top_score = html.escape(str(result.get("score", "-")))
-
         top_risk_rows += f"""
         <tr>
-            <td>{top_host}</td>
-            <td>{top_grade}</td>
-            <td>{top_score}</td>
+            <td>{html.escape(str(result.get('host', '')))}</td>
+            <td>{html.escape(str(result.get('grade', '-')))}</td>
+            <td>{html.escape(str(result.get('score', '-')))}</td>
         </tr>
         """
 
+    def grade_class_for(result):
+
+        if result.get("status") == "FAILED":
+            return "grade-f"
+
+        return {
+            "A": "grade-a",
+            "B": "grade-b",
+            "C": "grade-c",
+            "D": "grade-d",
+            "F": "grade-f",
+        }.get(result.get("grade", ""), "")
+
     rows = ""
+
     for result in ranked_results:
-            host = html.escape(str(result.get("host", "")))
-            status = html.escape(str(result.get("status", "")))
-            grade = html.escape(str(result.get("grade", "-")))
-            score = html.escape(str(result.get("score", "-")))
-            reason = html.escape(str(result.get("reason", "")))
 
-            status_class = {
-                "AUDITED": "pass",
-                "ONLINE": "review",
-                "FAILED": "fail"
-            }.get(result.get("status"), "fail")
+        host = html.escape(str(result.get("host", "")))
+        status = html.escape(str(result.get("status", "")))
+        grade = html.escape(str(result.get("grade", "-")))
+        score = html.escape(str(result.get("score", "-")))
+        reason = html.escape(str(result.get("reason", "")))
 
-            rows += f"""
-        <tr>
+        status_class = {
+            "AUDITED": "pass",
+            "ONLINE": "review",
+            "FAILED": "fail"
+        }.get(result.get("status"), "fail")
+
+        row_class = grade_class_for(result)
+
+        rows += f"""
+        <tr class="{row_class}">
             <td>{host}</td>
             <td><span class="badge {status_class}">{status}</span></td>
             <td>{grade}</td>
@@ -2607,198 +2629,218 @@ def save_fleet_dashboard(results, filename):
         """
 
     dashboard = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Fleet Security Dashboard</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background: #f5f7fb;
-                color: #1f2937;
-                margin: 0;
-            }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fleet Security Dashboard</title>
 
-            header {{
-                background: #111827;
-                color: white;
-                padding: 28px 40px;
-            }}
+<style>
 
-            main {{
-                padding: 28px 40px;
-            }}
+body {{
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+    margin: 0;
+}}
 
-            .grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 16px;
-                margin-bottom: 20px;
-            }}
+header {{
+    background: #111827;
+    color: white;
+    padding: 24px;
+}}
 
-            .card {{
-                background: white;
-                border: 1px solid #d8dee9;
-                border-radius: 12px;
-                padding: 18px;
-                margin-bottom: 20px;
-            }}
+main {{
+    padding: 24px;
+}}
 
-            .label {{
-                color: #6b7280;
-                font-size: 13px;
-                text-transform: uppercase;
-                font-weight: bold;
-            }}
+.grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}}
 
-            .value {{
-                font-size: 34px;
-                font-weight: bold;
-                margin-top: 6px;
-            }}
+.card {{
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+}}
 
-            table {{
-                border-collapse: collapse;
-                width: 100%;
-                background: white;
-            }}
+.label {{
+    color: #6b7280;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+}}
 
-            th, td {{
-                border-bottom: 1px solid #d8dee9;
-                padding: 10px;
-                text-align: left;
-            }}
+.value {{
+    font-size: 30px;
+    font-weight: bold;
+}}
 
-            th {{
-                background: #f3f4f6;
-                text-transform: uppercase;
-                font-size: 13px;
-            }}
+table {{
+    width: 100%;
+    border-collapse: collapse;
+}}
 
-            .badge {{
-                display: inline-block;
-                min-width: 80px;
-                text-align: center;
-                border-radius: 999px;
-                padding: 4px 9px;
-                color: white;
-                font-weight: bold;
-                font-size: 12px;
-            }}
+th, td {{
+    border-bottom: 1px solid #d8dee9;
+    padding: 10px;
+    text-align: left;
+}}
 
-            .pass {{
-                background: #15803d;
-            }}
+th {{
+    background: #f3f4f6;
+}}
 
-            .review {{
-                background: #b45309;
-            }}
+.badge {{
+    color: white;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: bold;
+}}
 
-            .fail {{
-                background: #b91c1c;
-            }}
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>Fleet Security Dashboard</h1>
-            <p>Generated: {datetime.now().isoformat(timespec="seconds")}</p>
-        </header>
+.pass {{
+    background: #15803d;
+}}
 
-        <main>
-            <div class="grid">
-                <div class="card">
-                    <div class="label">Total Systems</div>
-                    <div class="value">{total}</div>
-                </div>
+.review {{
+    background: #b45309;
+}}
 
-                <div class="card">
-                    <div class="label">Audited</div>
-                    <div class="value">{audited}</div>
-                </div>
+.fail {{
+    background: #b91c1c;
+}}
 
-                <div class="card">
-                    <div class="label">Failed</div>
-                    <div class="value">{failed}</div>
-                </div>
+.grade-a {{
+    background: #dcfce7;
+}}
 
-                <div class="card">
-                    <div class="label">Average Score</div>
-                    <div class="value">{average_score}/100</div>
-                </div>
+.grade-b {{
+    background: #ecfdf5;
+}}
 
-                <div class="card">
-                    <div class="label">Organization Grade</div>
-                    <div class="value">{organization_grade}</div>
-                </div>
-                                <div class="card">
-                    <div class="label">A Systems</div>
-                    <div class="value">{a_count}</div>
-                </div>
+.grade-c {{
+    background: #fef9c3;
+}}
 
-                <div class="card">
-                    <div class="label">B Systems</div>
-                    <div class="value">{b_count}</div>
-                </div>
+.grade-d {{
+    background: #ffedd5;
+}}
 
-                <div class="card">
-                    <div class="label">C Systems</div>
-                    <div class="value">{c_count}</div>
-                </div>
+.grade-f {{
+    background: #fee2e2;
+}}
 
-                <div class="card">
-                    <div class="label">D Systems</div>
-                    <div class="value">{d_count}</div>
-                </div>
+</style>
+</head>
 
-                <div class="card">
-                    <div class="label">F Systems</div>
-                    <div class="value">{f_count}</div>
-                </div>
-            </div>
+<body>
 
-            <section class="card">
-                <h2>Top Risk Systems</h2>
+<header>
+    <h1>Fleet Security Dashboard</h1>
+</header>
 
-    <table>
-        <tr>
-            <th>Host</th>
-            <th>Grade</th>
-            <th>Score</th>
-        </tr>
+<main>
 
-        {top_risk_rows}
-    </table>
-</section>
+<div class="grid">
+
+<div class="card">
+<div class="label">Total Systems</div>
+<div class="value">{total}</div>
+</div>
+
+<div class="card">
+<div class="label">Audited</div>
+<div class="value">{audited}</div>
+</div>
+
+<div class="card">
+<div class="label">Failed</div>
+<div class="value">{failed}</div>
+</div>
+
+<div class="card">
+<div class="label">Average Score</div>
+<div class="value">{average_score}</div>
+</div>
+
+<div class="card">
+<div class="label">Organization Grade</div>
+<div class="value">{organization_grade}</div>
+</div>
+
+<div class="card">
+<div class="label">A Systems</div>
+<div class="value">{a_count}</div>
+</div>
+
+<div class="card">
+<div class="label">B Systems</div>
+<div class="value">{b_count}</div>
+</div>
+
+<div class="card">
+<div class="label">C Systems</div>
+<div class="value">{c_count}</div>
+</div>
+
+<div class="card">
+<div class="label">D Systems</div>
+<div class="value">{d_count}</div>
+</div>
+
+<div class="card">
+<div class="label">F Systems</div>
+<div class="value">{f_count}</div>
+</div>
+
+</div>
+
 <section class="card">
-    <h2>Most Common Findings</h2>
-
-    <table>
-        <tr>
-            <th>Finding</th>
-            <th>Affected Systems</th>
-        </tr>
-        {common_findings_rows}
-    </table>
+<h2>Top Risk Systems</h2>
+<table>
+<tr>
+<th>Host</th>
+<th>Grade</th>
+<th>Score</th>
+</tr>
+{top_risk_rows}
+</table>
 </section>
+
 <section class="card">
-    <h2>Fleet Results</h2>
-                <table>
-                    <tr>
-                        <th>Host</th>
-                        <th>Status</th>
-                        <th>Grade</th>
-                        <th>Score</th>
-                        <th>Reason</th>
-                    </tr>
-                    {rows}
-                </table>
-            </section>
-        </main>
-    </body>
-    </html>
-    """
+<h2>Most Common Findings</h2>
+<table>
+<tr>
+<th>Finding</th>
+<th>Affected Systems</th>
+</tr>
+{common_findings_rows}
+</table>
+</section>
+
+<section class="card">
+<h2>Fleet Results</h2>
+<table>
+<tr>
+<th>Host</th>
+<th>Status</th>
+<th>Grade</th>
+<th>Score</th>
+<th>Reason</th>
+</tr>
+{rows}
+</table>
+</section>
+
+</main>
+</body>
+</html>
+"""
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write(dashboard)
