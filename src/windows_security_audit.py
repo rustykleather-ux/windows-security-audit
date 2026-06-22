@@ -7,9 +7,9 @@ import platform
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from unittest import result
 
-from click import command
+
+
 
 
 
@@ -2466,12 +2466,28 @@ def run_fleet_scan(fleet_file):
         if audit_data:
             score = score_remote_system(audit_data)
 
+            findings = []
+
+            if not audit_data.get("FirewallEnabled"):
+                findings.append("Firewall Disabled")
+
+            if not audit_data.get("DefenderEnabled"):
+                findings.append("Defender Disabled")
+
+            if not audit_data.get("BitLockerEnabled"):
+                findings.append("BitLocker Disabled")
+
+            if not audit_data.get("LastUpdate"):
+                findings.append("Missing Last Update")
+
             results.append({
                 "host": host,
                 "status": "AUDITED",
                 "score": score,
-                "grade": get_letter_grade(score)
+                "grade": get_letter_grade(score),
+                "findings": findings
             })
+
         else:
             results.append({
                 "host": host,
@@ -2501,11 +2517,53 @@ def save_fleet_dashboard(results, filename):
     d_count = sum(1 for r in results if r.get("grade") == "D")
     f_count = sum(1 for r in results if r.get("grade") == "F")
     
-    #  Sort worst systems first
-    ranked_results = sorted(results, key=lambda x: x.get("score", 0) if x.get("status") == "AUDITED" else -1
+
+    finding_counts = {
+        "Firewall Disabled": 0,
+        "Defender Disabled": 0,
+        "BitLocker Disabled": 0,
+        "Missing Last Update": 0,
+    }
+
+    for result in results:
+        if result.get("status") != "AUDITED":
+            continue
+
+        for finding in result.get("findings", []):
+            if finding in finding_counts:
+                finding_counts[finding] += 1
+
+    common_findings_rows = ""
+
+    for finding, count in sorted(
+        finding_counts.items(),
+        key=lambda x: x[1],
+        reverse=True
+    ):
+        if count == 0:
+            continue
+
+        common_findings_rows += f"""
+        <tr>
+            <td>{html.escape(finding)}</td>
+            <td>{count}</td>
+        </tr>
+        """
+
+    if not common_findings_rows:
+        common_findings_rows = """
+        <tr>
+            <td colspan="2">No common findings detected across audited systems.</td>
+        </tr>
+        """
+
+    # Sort worst systems first
+    ranked_results = sorted(
+        results,
+        key=lambda x: x.get("score", 0) if x.get("status") == "AUDITED" else -1
     )
-    
-       # TOP RISK SYSTEMS
+
+    # TOP RISK SYSTEMS
     top_risk_rows = ""
 
     for result in ranked_results[:10]:
@@ -2713,7 +2771,17 @@ def save_fleet_dashboard(results, filename):
         {top_risk_rows}
     </table>
 </section>
+<section class="card">
+    <h2>Most Common Findings</h2>
 
+    <table>
+        <tr>
+            <th>Finding</th>
+            <th>Affected Systems</th>
+        </tr>
+        {common_findings_rows}
+    </table>
+</section>
 <section class="card">
     <h2>Fleet Results</h2>
                 <table>
