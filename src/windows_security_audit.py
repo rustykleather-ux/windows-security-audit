@@ -7,6 +7,10 @@ import platform
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from unittest import result
+
+from click import command
+
 
 
 # ----------------------------
@@ -304,6 +308,8 @@ def parse_arguments():
     parser.add_argument("--hunt", action="store_true", help="Enable threat hunting checks")
     parser.add_argument("--output", default="audit_output", help="Output directory")
     parser.add_argument("--pdf", action="store_true", help="Generate PDF report")
+    parser.add_argument("--fleet", help="Text file containing computer names, one per line")
+    parser.add_argument("--fleet-timeout", type=int, default=30, help="Seconds to wait for each computer during fleet scan")
     return parser.parse_args()
 
 
@@ -2336,12 +2342,425 @@ def audit_threat_network_connections():
         5
     ), "\n".join(findings)
 
+def test_remote_connectivity(host, timeout=15):
+    command = f'Test-WsMan "{host}" -ErrorAction Stop'
+
+    result = run_powershell(command, timeout=timeout)
+
+    return result.get("ok") is True
+
+def run_remote_audit(host):
+    command = f"""
+    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
+        hostname
+    }}
+    """
+
+    return run_powershell(command, timeout=60)
+
+def load_fleet_targets(fleet_file):
+    with open(fleet_file, "r") as f:
+        return [
+            line.strip()
+            for line in f
+            if line.strip()
+        ]
+def save_fleet_report(results, filename):
+    report = {
+        "generated": datetime.now().isoformat(timespec="seconds"),
+        "total_systems": len(results),
+        "audited": sum(1 for r in results if r.get("status") == "AUDITED"),
+        "failed": sum(1 for r in results if r.get("status") == "FAILED"),
+        "systems": results,
+    }
+
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=4)
+
+
+def run_remote_mini_audit(host):
+    command = f"""
+    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
+
+        $firewallProfiles = Get-NetFirewallProfile
+        $firewallEnabled = ($firewallProfiles | Where-Object {{ $_.Enabled -eq $true }}).Count -ge 3
+
+        $defenderStatus = Get-MpComputerStatus -ErrorAction SilentlyContinue
+        $defenderEnabled = $false
+
+        if ($defenderStatus) {{
+            $defenderEnabled = $defenderStatus.AntivirusEnabled -eq $true
+        }}
+
+        $bitlockerEnabled = $false
+        $bitlocker = Get-BitLockerVolume -MountPoint "C:" -ErrorAction SilentlyContinue
+
+        if ($bitlocker) {{
+            $bitlockerEnabled = $bitlocker.ProtectionStatus -eq "On" -or $bitlocker.ProtectionStatus -eq 1
+        }}
+
+        $lastUpdate = Get-HotFix |
+            Where-Object {{ $_.InstalledOn }} |
+            Sort-Object InstalledOn -Descending |
+            Select-Object -First 1
+
+        [PSCustomObject]@{{
+            Hostname = $env:COMPUTERNAME
+            FirewallEnabled = $firewallEnabled
+            DefenderEnabled = $defenderEnabled
+            BitLockerEnabled = $bitlockerEnabled
+            LastUpdate = if ($lastUpdate) {{ $lastUpdate.InstalledOn.ToString("yyyy-MM-dd") }} else {{ $null }}
+        }}
+
+    }} | ConvertTo-Json -Depth 4
+    """
+
+    result = run_powershell(command, timeout=90)
+
+    if not result.get("ok"):
+        return None
+
+    return parse_json_output(result)
+
+
+def score_remote_system(data):
+    score = 0
+
+    if data.get("FirewallEnabled"):
+        score += 30
+
+    if data.get("DefenderEnabled"):
+        score += 30
+
+    if data.get("BitLockerEnabled"):
+        score += 30
+
+    if data.get("LastUpdate"):
+        score += 10
+
+    return score
+
+
+def run_fleet_scan(fleet_file):
+    hosts = load_fleet_targets(fleet_file)
+    results = []
+
+    for host in hosts:
+        print(f"[{host}] Testing connectivity...")
+
+        if not test_remote_connectivity(host):
+            print(f"[{host}] FAILED - WinRM unavailable")
+
+            results.append({
+                "host": host,
+                "status": "FAILED",
+                "reason": "WinRM unavailable"
+            })
+
+            continue
+
+        print(f"[{host}] Reachable")
+
+        audit_data = run_remote_mini_audit(host)
+
+        if audit_data:
+            score = score_remote_system(audit_data)
+
+            results.append({
+                "host": host,
+                "status": "AUDITED",
+                "score": score,
+                "grade": get_letter_grade(score)
+            })
+        else:
+            results.append({
+                "host": host,
+                "status": "FAILED",
+                "reason": "Audit failed"
+            })
+
+    return results
+
+def save_fleet_dashboard(results, filename):
+    total = len(results)
+    audited = sum(1 for r in results if r.get("status") == "AUDITED")
+    online = sum(1 for r in results if r.get("status") == "ONLINE")
+    failed = sum(1 for r in results if r.get("status") == "FAILED")
+
+    scores = [
+        r.get("score")
+        for r in results
+        if r.get("status") == "AUDITED" and isinstance(r.get("score"), int)
+    ]
+
+    average_score = round(sum(scores) / len(scores)) if scores else 0
+    organization_grade = get_letter_grade(average_score) if scores else "N/A"
+
+    rows = ""
+
+    for result in results:
+        host = html.escape(str(result.get("host", "")))
+        status = html.escape(str(result.get("status", "")))
+        grade = html.escape(str(result.get("grade", "-")))
+        score = html.escape(str(result.get("score", "-")))
+        reason = html.escape(str(result.get("reason", "")))
+
+        if status == "AUDITED":
+            status_class = "pass"
+        elif status == "ONLINE":
+            status_class = "review"
+        else:
+            status_class = "fail"
+
+        rows += f"""
+        <tr>
+            <td>{host}</td>
+            <td><span class="badge {status_class}">{status}</span></td>
+            <td>{grade}</td>
+            <td>{score}</td>
+            <td>{reason}</td>
+        </tr>
+        """
+
+    dashboard = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Fleet Security Dashboard</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background: #f5f7fb;
+                color: #1f2937;
+                margin: 0;
+            }}
+
+            header {{
+                background: #111827;
+                color: white;
+                padding: 28px 40px;
+            }}
+
+            main {{
+                padding: 28px 40px;
+            }}
+
+            .grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+                margin-bottom: 20px;
+            }}
+
+            .card {{
+                background: white;
+                border: 1px solid #d8dee9;
+                border-radius: 12px;
+                padding: 18px;
+                margin-bottom: 20px;
+            }}
+
+            .label {{
+                color: #6b7280;
+                font-size: 13px;
+                text-transform: uppercase;
+                font-weight: bold;
+            }}
+
+            .value {{
+                font-size: 34px;
+                font-weight: bold;
+                margin-top: 6px;
+            }}
+
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                background: white;
+            }}
+
+            th, td {{
+                border-bottom: 1px solid #d8dee9;
+                padding: 10px;
+                text-align: left;
+            }}
+
+            th {{
+                background: #f3f4f6;
+                text-transform: uppercase;
+                font-size: 13px;
+            }}
+
+            .badge {{
+                display: inline-block;
+                min-width: 80px;
+                text-align: center;
+                border-radius: 999px;
+                padding: 4px 9px;
+                color: white;
+                font-weight: bold;
+                font-size: 12px;
+            }}
+
+            .pass {{
+                background: #15803d;
+            }}
+
+            .review {{
+                background: #b45309;
+            }}
+
+            .fail {{
+                background: #b91c1c;
+            }}
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Fleet Security Dashboard</h1>
+            <p>Generated: {datetime.now().isoformat(timespec="seconds")}</p>
+        </header>
+
+        <main>
+            <div class="grid">
+                <div class="card">
+                    <div class="label">Total Systems</div>
+                    <div class="value">{total}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Audited</div>
+                    <div class="value">{audited}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Failed</div>
+                    <div class="value">{failed}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Average Score</div>
+                    <div class="value">{average_score}/100</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Organization Grade</div>
+                    <div class="value">{organization_grade}</div>
+                </div>
+            </div>
+
+            <section class="card">
+                <h2>Fleet Results</h2>
+                <table>
+                    <tr>
+                        <th>Host</th>
+                        <th>Status</th>
+                        <th>Grade</th>
+                        <th>Score</th>
+                        <th>Reason</th>
+                    </tr>
+                    {rows}
+                </table>
+            </section>
+        </main>
+    </body>
+    </html>
+    """
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(dashboard)
+        
+def run_remote_mini_audit(host):
+        command = f"""
+    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
+
+        $firewall = (Get-NetFirewallProfile |
+            Where-Object {{ $_.Enabled -eq $true }}).Count
+
+        $defender = (Get-MpComputerStatus).AntivirusEnabled
+
+        $bitlocker = (
+            Get-BitLockerVolume -MountPoint "C:" -ErrorAction SilentlyContinue
+        ).ProtectionStatus
+
+        $updates = (
+            Get-HotFix |
+            Sort-Object InstalledOn -Descending |
+            Select-Object -First 1
+        ).InstalledOn
+
+        [PSCustomObject]@{{
+            Hostname = $env:COMPUTERNAME
+            FirewallEnabled = ($firewall -gt 0)
+            DefenderEnabled = $defender
+            BitLockerEnabled = ($bitlocker -eq 1)
+            LastUpdate = $updates
+        }}
+
+    }} | ConvertTo-Json -Depth 4
+    """
+
+        result = run_powershell(command, timeout=90)
+
+        if not result.get("ok"):
+            return None
+
+        return parse_json_output(result)
+
+def score_remote_system(data):
+    score = 0
+
+    if data.get("FirewallEnabled"):
+        score += 30
+
+    if data.get("DefenderEnabled"):
+        score += 30
+
+    if data.get("BitLockerEnabled"):
+        score += 30
+
+    if data.get("LastUpdate"):
+        score += 10
+
+    return score
+
 def main():
     args = parse_arguments()
 
     output_dir = Path(args.output)
     output_dir.mkdir(exist_ok=True)
 
+    if args.fleet:
+        fleet_results = run_fleet_scan(args.fleet)
+
+        fleet_report_path = output_dir / "fleet_report.json"
+
+        save_fleet_report(
+            fleet_results,
+            fleet_report_path
+        )
+        fleet_dashboard_path = output_dir / "fleet_dashboard.html"
+
+        save_fleet_dashboard(
+        fleet_results,
+        fleet_dashboard_path
+)
+
+        print("\nFleet Summary")
+        print("=" * 50)
+
+        for result in fleet_results:
+            print(
+                f"{result['host']} : "
+                f"{result['status']}"
+            )
+
+        print(f"\nFleet report saved to: {fleet_report_path.resolve()}")
+        print(f"Fleet dashboard saved to: {fleet_dashboard_path.resolve()}")
+
+        return
+    
     if not any([args.html, args.csv, args.json, args.pdf, args.summary]):
         args.html = True
         args.csv = True
@@ -2422,6 +2841,7 @@ def main():
             check_name,
             check_data["summary"].get("status", "REVIEW")
         )
+        check_data["summary"]["mitre"] = get_mitre_mapping(check_name)
 
     overall_score = round((weighted_score / max_weighted_score) * 100)
     overall_grade = get_letter_grade(overall_score)
