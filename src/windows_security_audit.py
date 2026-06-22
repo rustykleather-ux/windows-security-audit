@@ -2495,24 +2495,50 @@ def save_fleet_dashboard(results, filename):
 
     average_score = round(sum(scores) / len(scores)) if scores else 0
     organization_grade = get_letter_grade(average_score) if scores else "N/A"
+    a_count = sum(1 for r in results if r.get("grade") == "A")
+    b_count = sum(1 for r in results if r.get("grade") == "B")
+    c_count = sum(1 for r in results if r.get("grade") == "C")
+    d_count = sum(1 for r in results if r.get("grade") == "D")
+    f_count = sum(1 for r in results if r.get("grade") == "F")
+    
+    #  Sort worst systems first
+    ranked_results = sorted(results, key=lambda x: x.get("score", 0) if x.get("status") == "AUDITED" else -1
+    )
+    
+       # TOP RISK SYSTEMS
+    top_risk_rows = ""
+
+    for result in ranked_results[:10]:
+        if result.get("status") != "AUDITED":
+            continue
+
+        top_host = html.escape(str(result.get("host", "")))
+        top_grade = html.escape(str(result.get("grade", "-")))
+        top_score = html.escape(str(result.get("score", "-")))
+
+        top_risk_rows += f"""
+        <tr>
+            <td>{top_host}</td>
+            <td>{top_grade}</td>
+            <td>{top_score}</td>
+        </tr>
+        """
 
     rows = ""
+    for result in ranked_results:
+            host = html.escape(str(result.get("host", "")))
+            status = html.escape(str(result.get("status", "")))
+            grade = html.escape(str(result.get("grade", "-")))
+            score = html.escape(str(result.get("score", "-")))
+            reason = html.escape(str(result.get("reason", "")))
 
-    for result in results:
-        host = html.escape(str(result.get("host", "")))
-        status = html.escape(str(result.get("status", "")))
-        grade = html.escape(str(result.get("grade", "-")))
-        score = html.escape(str(result.get("score", "-")))
-        reason = html.escape(str(result.get("reason", "")))
+            status_class = {
+                "AUDITED": "pass",
+                "ONLINE": "review",
+                "FAILED": "fail"
+            }.get(result.get("status"), "fail")
 
-        if status == "AUDITED":
-            status_class = "pass"
-        elif status == "ONLINE":
-            status_class = "review"
-        else:
-            status_class = "fail"
-
-        rows += f"""
+            rows += f"""
         <tr>
             <td>{host}</td>
             <td><span class="badge {status_class}">{status}</span></td>
@@ -2648,10 +2674,48 @@ def save_fleet_dashboard(results, filename):
                     <div class="label">Organization Grade</div>
                     <div class="value">{organization_grade}</div>
                 </div>
+                                <div class="card">
+                    <div class="label">A Systems</div>
+                    <div class="value">{a_count}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">B Systems</div>
+                    <div class="value">{b_count}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">C Systems</div>
+                    <div class="value">{c_count}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">D Systems</div>
+                    <div class="value">{d_count}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">F Systems</div>
+                    <div class="value">{f_count}</div>
+                </div>
             </div>
 
             <section class="card">
-                <h2>Fleet Results</h2>
+                <h2>Top Risk Systems</h2>
+
+    <table>
+        <tr>
+            <th>Host</th>
+            <th>Grade</th>
+            <th>Score</th>
+        </tr>
+
+        {top_risk_rows}
+    </table>
+</section>
+
+<section class="card">
+    <h2>Fleet Results</h2>
                 <table>
                     <tr>
                         <th>Host</th>
