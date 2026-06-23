@@ -1674,6 +1674,7 @@ def save_to_html(data, filename, include_raw=True):
             why = html.escape(str(remediation.get("why", "")))
             fix = html.escape(str(remediation.get("fix", "")))
             action = html.escape(str(remediation.get("action", "")))
+           
             css_class = status.lower()
 
             
@@ -2418,6 +2419,7 @@ def run_remote_mini_audit(host):
             DefenderEnabled = $defenderEnabled
             BitLockerEnabled = $bitlockerEnabled
             LastUpdate = if ($lastUpdate) {{ $lastUpdate.InstalledOn.ToString("yyyy-MM-dd") }} else {{ $null }}
+            DaysSincePatch = if ($lastUpdate) {{ (New-TimeSpan -Start $lastUpdate.InstalledOn -End (Get-Date)).Days }} else {{ $null }}
         }}
 
     }} | ConvertTo-Json -Depth 4
@@ -2464,7 +2466,13 @@ def run_fleet_scan(fleet_file):
             results.append({
                 "host": host,
                 "status": "FAILED",
-                "reason": "WinRM unavailable"
+                "reason": "WinRM unavailable",
+                "score": None,
+                "grade": "-",
+                "findings": [],
+                "last_update": "-",
+                "days_since_patch": "-",
+                "patch_status": "UNKNOWN",
             })
 
             continue
@@ -2475,7 +2483,6 @@ def run_fleet_scan(fleet_file):
 
         if audit_data:
             score = score_remote_system(audit_data)
-
             findings = []
 
             if not audit_data.get("FirewallEnabled"):
@@ -2490,22 +2497,44 @@ def run_fleet_scan(fleet_file):
             if not audit_data.get("LastUpdate"):
                 findings.append("Missing Last Update")
 
+            last_update = audit_data.get("LastUpdate")
+            days_since_patch = audit_data.get("DaysSincePatch")
+
+            if days_since_patch is None:
+                patch_status = "UNKNOWN"
+            elif days_since_patch <= 30:
+                patch_status = "COMPLIANT"
+            elif days_since_patch <= 60:
+                patch_status = "WARNING"
+            else:
+                patch_status = "NON-COMPLIANT"
+
             results.append({
                 "host": host,
                 "status": "AUDITED",
                 "score": score,
                 "grade": get_letter_grade(score),
-                "findings": findings
+                "findings": findings,
+                "last_update": last_update or "-",
+                "days_since_patch": days_since_patch if days_since_patch is not None else "-",
+                "patch_status": patch_status,
             })
 
         else:
             results.append({
                 "host": host,
                 "status": "FAILED",
-                "reason": "Audit failed"
+                "reason": "Audit failed",
+                "score": None,
+                "grade": "-",
+                "findings": [],
+                "last_update": "-",
+                "days_since_patch": "-",
+                "patch_status": "UNKNOWN",
             })
 
     return results
+
 def save_fleet_dashboard(results, filename):
 
     total = len(results)
@@ -2527,6 +2556,14 @@ def save_fleet_dashboard(results, filename):
     c_count = sum(1 for r in results if r.get("grade") == "C")
     d_count = sum(1 for r in results if r.get("grade") == "D")
     f_count = sum(1 for r in results if r.get("grade") == "F")
+
+    patch_compliant = sum(1 for r in results if r.get("patch_status") == "COMPLIANT")
+    patch_warning = sum(1 for r in results if r.get("patch_status") == "WARNING")
+    patch_non_compliant = sum(1 for r in results if r.get("patch_status") == "NON-COMPLIANT")
+    patch_unknown = sum(1 for r in results if r.get("patch_status") == "UNKNOWN")
+
+    patch_total = patch_compliant + patch_warning + patch_non_compliant + patch_unknown
+    patch_compliance_percent = round((patch_compliant / patch_total) * 100) if patch_total else 0
 
     # Most Common Findings
     finding_counts = {
@@ -2614,7 +2651,11 @@ def save_fleet_dashboard(results, filename):
         grade = html.escape(str(result.get("grade", "-")))
         score = html.escape(str(result.get("score", "-")))
         reason = html.escape(str(result.get("reason", "")))
-
+        
+        last_update = html.escape(str(result.get("last_update", "-")))
+        days_since_patch = html.escape(str(result.get("days_since_patch", "-")))
+        patch_status = html.escape(str(result.get("patch_status", "-")))
+        
         status_class = {
             "AUDITED": "pass",
             "ONLINE": "review",
@@ -2629,6 +2670,9 @@ def save_fleet_dashboard(results, filename):
             <td><span class="badge {status_class}">{status}</span></td>
             <td>{grade}</td>
             <td>{score}</td>
+            <td>{last_update}</td>
+            <td>{days_since_patch}</td>
+            <td>{patch_status}</td>
             <td>{reason}</td>
         </tr>
         """
@@ -2641,6 +2685,8 @@ def save_fleet_dashboard(results, filename):
 <title>Fleet Security Dashboard</title>
 
 <style>
+
+
 
 body {{
     font-family: Arial, sans-serif;
@@ -2685,8 +2731,13 @@ main {{
     font-weight: bold;
 }}
 
+.table-wrap {{
+    overflow-x: auto;
+}}
+
 table {{
     width: 100%;
+    min-width: 1200px;
     border-collapse: collapse;
 }}
 
@@ -2694,7 +2745,9 @@ th, td {{
     border-bottom: 1px solid #d8dee9;
     padding: 10px;
     text-align: left;
+    white-space: nowrap;
 }}
+
 
 th {{
     background: #f3f4f6;
@@ -2752,6 +2805,21 @@ th {{
 <main>
 
 <div class="grid">
+
+<div class="card">
+<div class="label">Patch Compliance</div>
+<div class="value">{patch_compliance_percent}%</div>
+</div>
+
+<div class="card">
+<div class="label">Patch Warning</div>
+<div class="value">{patch_warning}</div>
+</div>
+
+<div class="card">
+<div class="label">Patch Non-Compliant</div>
+<div class="value">{patch_non_compliant}</div>
+</div>
 
 <div class="card">
 <div class="label">Total Systems</div>
@@ -2815,6 +2883,7 @@ th {{
 </tr>
 {top_risk_rows}
 </table>
+</div>
 </section>
 
 <section class="card">
@@ -2830,14 +2899,17 @@ th {{
 
 <section class="card">
 <h2>Fleet Results</h2>
+<div class="table-wrap">
 <table>
 <tr>
 <th>Host</th>
 <th>Status</th>
 <th>Grade</th>
 <th>Score</th>
+<th>Last Update</th>
+<th>Patch Age (Days)</th>
+<th>Patch Status</th>
 <th>Reason</th>
-</tr>
 {rows}
 </table>
 </section>
