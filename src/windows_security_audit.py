@@ -2543,6 +2543,14 @@ def run_fleet_scan(fleet_file):
 
     return results
 
+def render_template(template_name, values):
+    template_path = Path("templates") / template_name
+
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+
+    return template.format(**values)
+
 def save_fleet_dashboard(results, filename):
 
     total = len(results)
@@ -2685,248 +2693,28 @@ def save_fleet_dashboard(results, filename):
         </tr>
         """
 
-    dashboard = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Fleet Security Dashboard</title>
-
-<style>
-
-
-
-body {{
-    font-family: Arial, sans-serif;
-    background: #f5f7fb;
-    color: #1f2937;
-    margin: 0;
-}}
-
-header {{
-    background: #111827;
-    color: white;
-    padding: 24px;
-}}
-
-main {{
-    padding: 24px;
-}}
-
-.grid {{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-}}
-
-.card {{
-    background: white;
-    border: 1px solid #d8dee9;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
-}}
-
-.label {{
-    color: #6b7280;
-    font-size: 12px;
-    text-transform: uppercase;
-    font-weight: bold;
-}}
-
-.value {{
-    font-size: 30px;
-    font-weight: bold;
-}}
-
-.table-wrap {{
-    overflow-x: auto;
-}}
-
-table {{
-    width: 100%;
-    min-width: 1200px;
-    border-collapse: collapse;
-}}
-
-th, td {{
-    border-bottom: 1px solid #d8dee9;
-    padding: 10px;
-    text-align: left;
-    white-space: nowrap;
-}}
-
-
-th {{
-    background: #f3f4f6;
-}}
-
-.badge {{
-    color: white;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: bold;
-}}
-
-.pass {{
-    background: #15803d;
-}}
-
-.review {{
-    background: #b45309;
-}}
-
-.fail {{
-    background: #b91c1c;
-}}
-
-.grade-a {{
-    background: #dcfce7;
-}}
-
-.grade-b {{
-    background: #ecfdf5;
-}}
-
-.grade-c {{
-    background: #fef9c3;
-}}
-
-.grade-d {{
-    background: #ffedd5;
-}}
-
-.grade-f {{
-    background: #fee2e2;
-}}
-
-</style>
-</head>
-
-<body>
-
-<header>
-    <h1>Fleet Security Dashboard</h1>
-</header>
-
-<main>
-
-<div class="grid">
-
-<div class="card">
-<div class="label">Patch Compliance</div>
-<div class="value">{patch_compliance_percent}%</div>
-</div>
-
-<div class="card">
-<div class="label">Patch Warning</div>
-<div class="value">{patch_warning}</div>
-</div>
-
-<div class="card">
-<div class="label">Patch Non-Compliant</div>
-<div class="value">{patch_non_compliant}</div>
-</div>
-
-<div class="card">
-<div class="label">Total Systems</div>
-<div class="value">{total}</div>
-</div>
-
-<div class="card">
-<div class="label">Audited</div>
-<div class="value">{audited}</div>
-</div>
-
-<div class="card">
-<div class="label">Failed</div>
-<div class="value">{failed}</div>
-</div>
-
-<div class="card">
-<div class="label">Average Score</div>
-<div class="value">{average_score}</div>
-</div>
-
-<div class="card">
-<div class="label">Organization Grade</div>
-<div class="value">{organization_grade}</div>
-</div>
-
-<div class="card">
-<div class="label">A Systems</div>
-<div class="value">{a_count}</div>
-</div>
-
-<div class="card">
-<div class="label">B Systems</div>
-<div class="value">{b_count}</div>
-</div>
-
-<div class="card">
-<div class="label">C Systems</div>
-<div class="value">{c_count}</div>
-</div>
-
-<div class="card">
-<div class="label">D Systems</div>
-<div class="value">{d_count}</div>
-</div>
-
-<div class="card">
-<div class="label">F Systems</div>
-<div class="value">{f_count}</div>
-</div>
-
-</div>
-
-<section class="card">
-<h2>Top Risk Systems</h2>
-<table>
-<tr>
-<th>Host</th>
-<th>Grade</th>
-<th>Score</th>
-</tr>
-{top_risk_rows}
-</table>
-</div>
-</section>
-
-<section class="card">
-<h2>Most Common Findings</h2>
-<table>
-<tr>
-<th>Finding</th>
-<th>Affected Systems</th>
-</tr>
-{common_findings_rows}
-</table>
-</section>
-
-<section class="card">
-<h2>Fleet Results</h2>
-<div class="table-wrap">
-<table>
-<tr>
-<th>Host</th>
-<th>Status</th>
-<th>Grade</th>
-<th>Score</th>
-<th>Last Update</th>
-<th>Patch Age (Days)</th>
-<th>Patch Status</th>
-<th>Reason</th>
-</tr>
-{rows}
-</table>
-</section>
-
-</main>
-</body>
-</html>
-"""
+    dashboard = render_template(
+    "fleet_dashboard.html",
+    {
+        "total": total,
+        "audited": audited,
+        "failed": failed,
+        "average_score": average_score,
+        "organization_grade": organization_grade,
+        "a_count": a_count,
+        "b_count": b_count,
+        "c_count": c_count,
+        "d_count": d_count,
+        "f_count": f_count,
+        "patch_compliance_percent": patch_compliance_percent,
+        "patch_warning": patch_warning,
+        "patch_non_compliant": patch_non_compliant,
+        "top_risk_rows": top_risk_rows,
+        "common_findings_rows": common_findings_rows,
+        "rows": rows,
+        "generated": datetime.now().isoformat(timespec="seconds"),
+    }
+)
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write(dashboard)
@@ -3083,156 +2871,20 @@ def save_drift_html_report(changes, filename):
         </tr>
         """
 
-    html_report = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Security Drift Report</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background: #f5f7fb;
-                color: #1f2937;
-                margin: 0;
-            }}
-
-            header {{
-                background: #111827;
-                color: white;
-                padding: 28px 40px;
-            }}
-
-            main {{
-                padding: 28px 40px;
-            }}
-
-            .grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 16px;
-                margin-bottom: 20px;
-            }}
-
-            .card {{
-                background: white;
-                border: 1px solid #d8dee9;
-                border-radius: 12px;
-                padding: 18px;
-                margin-bottom: 20px;
-            }}
-
-            .label {{
-                color: #6b7280;
-                font-size: 13px;
-                text-transform: uppercase;
-                font-weight: bold;
-            }}
-
-            .value {{
-                font-size: 34px;
-                font-weight: bold;
-                margin-top: 6px;
-            }}
-
-            .good {{
-                color: #15803d;
-            }}
-
-            .bad {{
-                color: #b91c1c;
-            }}
-
-            .neutral {{
-                color: #6b7280;
-            }}
-
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-            }}
-
-            th, td {{
-                border-bottom: 1px solid #d8dee9;
-                padding: 10px;
-                text-align: left;
-                vertical-align: top;
-            }}
-
-            th {{
-                background: #f3f4f6;
-                text-transform: uppercase;
-                font-size: 13px;
-            }}
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>Security Drift Report</h1>
-            <p>Generated: {datetime.now().isoformat(timespec="seconds")}</p>
-        </header>
-
-        <main>
-            <div class="grid">
-                <div class="card">
-                    <div class="label">Trend</div>
-                    <div class="value {trend_class}">{trend}</div>
-                </div>
-
-                <div class="card">
-                    <div class="label">Score Change</div>
-                    <div class="value">{score_change:+}</div>
-                </div>
-
-                <div class="card">
-                    <div class="label">Grade Before</div>
-                    <div class="value">{html.escape(str(grade_before))}</div>
-                </div>
-
-                <div class="card">
-                    <div class="label">Grade After</div>
-                    <div class="value">{html.escape(str(grade_after))}</div>
-                </div>
-            </div>
-
-            <section class="card">
-                <h2>Changed Checks</h2>
-                <table>
-                    <tr>
-                        <th>Check</th>
-                        <th>Old Status</th>
-                        <th>New Status</th>
-                        <th>Old Score</th>
-                        <th>New Score</th>
-                        <th>Current Finding</th>
-                    </tr>
-                    {changed_rows}
-                </table>
-            </section>
-
-            <section class="card">
-                <h2>New Checks</h2>
-                <table>
-                    <tr>
-                        <th>Check</th>
-                    </tr>
-                    {new_rows}
-                </table>
-            </section>
-
-            <section class="card">
-                <h2>Removed Checks</h2>
-                <table>
-                    <tr>
-                        <th>Check</th>
-                    </tr>
-                    {removed_rows}
-                </table>
-            </section>
-        </main>
-    </body>
-    </html>
-    """
+    html_report = render_template(
+    "drift_report.html",
+    {
+        "trend": trend,
+        "trend_class": trend_class,
+        "score_change": score_change,
+        "grade_before": grade_before,
+        "grade_after": grade_after,
+        "changed_rows": changed_rows,
+        "new_rows": new_rows,
+        "removed_rows": removed_rows,
+        "generated": datetime.now().isoformat(timespec="seconds"),
+    }
+)
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html_report)
