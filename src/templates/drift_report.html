@@ -1,0 +1,148 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Security Drift Report</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f5f7fb;
+                color: #1f2937;
+                margin: 0;
+            }
+
+            header {
+                background: #111827;
+                color: white;
+                padding: 28px 40px;
+            }
+
+            main {
+                padding: 28px 40px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+
+            .card {
+                background: white;
+                border: 1px solid #d8dee9;
+                border-radius: 12px;
+                padding: 18px;
+                margin-bottom: 20px;
+            }
+
+            .label {
+                color: #6b7280;
+                font-size: 13px;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+
+            .value {
+                font-size: 34px;
+                font-weight: bold;
+                margin-top: 6px;
+            }
+
+            .good {
+                color: #15803d;
+            }
+
+            .bad {
+                color: #b91c1c;
+            }
+
+            .neutral {
+                color: #6b7280;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th, td {
+                border-bottom: 1px solid #d8dee9;
+                padding: 10px;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                background: #f3f4f6;
+                text-transform: uppercase;
+                font-size: 13px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Security Drift Report</h1>
+            <p>Generated: {generated}</p>
+        </header>
+
+        <main>
+            <div class="grid">
+                <div class="card">
+                    <div class="label">Trend</div>
+                    <div class="value {trend_class}">{trend}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Score Change</div>
+                    <div class="value">{score_change:+}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Grade Before</div>
+                    <div class="value">{html.escape(str(grade_before))}</div>
+                </div>
+
+                <div class="card">
+                    <div class="label">Grade After</div>
+                    <div class="value">{html.escape(str(grade_after))}</div>
+                </div>
+            </div>
+
+            <section class="card">
+                <h2>Changed Checks</h2>
+                <table>
+                    <tr>
+                        <th>Check</th>
+                        <th>Old Status</th>
+                        <th>New Status</th>
+                        <th>Old Score</th>
+                        <th>New Score</th>
+                        <th>Current Finding</th>
+                    </tr>
+                    {changed_rows}
+                </table>
+            </section>
+
+            <section class="card">
+                <h2>New Checks</h2>
+                <table>
+                    <tr>
+                        <th>Check</th>
+                    </tr>
+                    {new_rows}
+                </table>
+            </section>
+
+            <section class="card">
+                <h2>Removed Checks</h2>
+                <table>
+                    <tr>
+                        <th>Check</th>
+                    </tr>
+                    {removed_rows}
+                </table>
+            </section>
+        </main>
+    </body>
+    </html>
+  
