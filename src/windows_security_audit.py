@@ -2,7 +2,6 @@ import argparse
 import csv
 import ctypes
 import html
-from html import parser
 import json
 import platform
 import subprocess
@@ -25,9 +24,6 @@ if not Path(POWERSHELL).exists():
 
 
 CHECK_WEIGHTS = {
-    "Threat Hunt - Remote Access Tools": 12,
-    "Threat Hunt - Suspicious Processes": 12,
-    "Threat Hunt - Persistence Indicators": 12,
     "Firewall": 10,
     "Microsoft Defender": 12,
     "Defender Signatures": 8,
@@ -312,7 +308,7 @@ def parse_arguments():
     parser.add_argument("--fleet", help="Text file containing computer names, one per line")
     parser.add_argument("--fleet-timeout", type=int, default=30, help="Seconds to wait for each computer during fleet scan")
     parser.add_argument("--baseline", action="store_true", help="Save current audit as baseline")
-    parser.add_argument("--compare", help="Compare current audit against a baseline JSON file")
+    parser.add_argument("--checks", help="Comma-separated list of check names to run (e.g. Firewall,RDP,SMB)")
     return parser.parse_args()
 
 
@@ -2466,7 +2462,7 @@ def run_fleet_scan(fleet_file):
             results.append({
                 "host": host,
                 "status": "FAILED",
-                "reason": "WinRM unavailable",
+                "reason": "Remote audit failed. Test Defender, BitLocker, and HotFix commands manually.",
                 "score": None,
                 "grade": "-",
                 "findings": [],
@@ -2480,6 +2476,9 @@ def run_fleet_scan(fleet_file):
         print(f"[{host}] Reachable")
 
         audit_data = run_remote_mini_audit(host)
+
+        print(f"\n[{host}] Audit Data:")
+        print(audit_data)
 
         if audit_data:
             score = score_remote_system(audit_data)
@@ -2498,7 +2497,16 @@ def run_fleet_scan(fleet_file):
                 findings.append("Missing Last Update")
 
             last_update = audit_data.get("LastUpdate")
+            
             days_since_patch = audit_data.get("DaysSincePatch")
+            
+            if isinstance(days_since_patch,dict):
+                days_since_patch = days_since_patch.get("Days")
+
+            try:
+                days_since_patch = int(days_since_patch)
+            except (TypeError, ValueError):
+                days_since_patch = None
 
             if days_since_patch is None:
                 patch_status = "UNKNOWN"
@@ -2910,6 +2918,7 @@ th {{
 <th>Patch Age (Days)</th>
 <th>Patch Status</th>
 <th>Reason</th>
+</tr>
 {rows}
 </table>
 </section>
@@ -2922,43 +2931,6 @@ th {{
     with open(filename, "w", encoding="utf-8") as f:
         f.write(dashboard)
         
-def run_remote_mini_audit(host):
-        command = f"""
-    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
-
-        $firewall = (Get-NetFirewallProfile |
-            Where-Object {{ $_.Enabled -eq $true }}).Count
-
-        $defender = (Get-MpComputerStatus).AntivirusEnabled
-
-        $bitlocker = (
-            Get-BitLockerVolume -MountPoint "C:" -ErrorAction SilentlyContinue
-        ).ProtectionStatus
-
-        $updates = (
-            Get-HotFix |
-            Sort-Object InstalledOn -Descending |
-            Select-Object -First 1
-        ).InstalledOn
-
-        [PSCustomObject]@{{
-            Hostname = $env:COMPUTERNAME
-            FirewallEnabled = ($firewall -gt 0)
-            DefenderEnabled = $defender
-            BitLockerEnabled = ($bitlocker -eq 1)
-            LastUpdate = $updates
-        }}
-
-    }} | ConvertTo-Json -Depth 4
-    """
-
-        result = run_powershell(command, timeout=90)
-
-        if not result.get("ok"):
-            return None
-
-        return parse_json_output(result)
-
 def score_remote_system(data):
     score = 0
 
@@ -2976,7 +2948,7 @@ def score_remote_system(data):
 
     return score
 
-def save_basline(report, filename):
+def save_baseline(report, filename):
     baseline = {
         "created": datetime.now().isoformat(timespec="seconds"),
         "system": report.get("system", {}),
@@ -3002,32 +2974,40 @@ def compare_with_baseline(current_report, baseline_file):
     with open(baseline_file, "r", encoding="utf-8") as f:
         baseline = json.load(f)
 
+    current_checks = current_report.get("checks", {})
+    baseline_checks = baseline.get("checks", {})
+
     changes = {
         "score_change": current_report.get("overall_score", 0) - baseline.get("overall_score", 0),
         "grade_before": baseline.get("overall_grade", "N/A"),
         "grade_after": current_report.get("overall_grade", "N/A"),
-        "new_checks": [],
-        "removed_checks": [],
+        "grade_change": (current_report.get("overall_grade") or "") + " -> " + (baseline.get("overall_grade") or ""),
+        "new_checks": [k for k in current_checks if k not in baseline_checks],
+        "removed_checks": [k for k in baseline_checks if k not in current_checks],
         "changed_checks": [],
     }
 
-    current_checks = current_report.get("checks", {})
-    baseline_checks = baseline.get("checks", {})
-
     for check_name, current_data in current_checks.items():
-        current_status = current_data.get("summary", {}).get("status", "REVIEW")
-        baseline_status = baseline_checks.get(check_name, {}).get("status", "REVIEW")
+        if check_name not in baseline_checks:
+            continue
 
-        if current_status != baseline_status:
-            if current_status in ["FAIL", "REVIEW"] and baseline_status == "PASS":
-                changes["new_findings"].append(check_name)
-            elif current_status == "PASS" and baseline_status in ["FAIL", "REVIEW"]:
-                changes["resolved_findings"].append(check_name)
+        current_summary = current_data.get("summary", {})
+        baseline_entry = baseline_checks[check_name]
 
-    changes["score_change"] = current_report.get("overall_score", 0) - baseline.get("overall_score", 0)
-    changes["grade_change"] = (
-        (current_report.get("overall_grade") or "") + " -> " + (baseline.get("overall_grade") or "")
-    )
+        current_status = current_summary.get("status", "REVIEW")
+        baseline_status = baseline_entry.get("status", "REVIEW")
+        current_score = current_summary.get("score", 0)
+        baseline_score = baseline_entry.get("score", 0)
+
+        if current_status != baseline_status or current_score != baseline_score:
+            changes["changed_checks"].append({
+                "check": check_name,
+                "old_status": baseline_status,
+                "new_status": current_status,
+                "old_score": baseline_score,
+                "new_score": current_score,
+                "new_message": current_summary.get("message", ""),
+            })
 
     return changes
 
@@ -3275,9 +3255,9 @@ def main():
         fleet_dashboard_path = output_dir / "fleet_dashboard.html"
 
         save_fleet_dashboard(
-        fleet_results,
-        fleet_dashboard_path
-)
+            fleet_results,
+            fleet_dashboard_path
+        )
 
         print("\nFleet Summary")
         print("=" * 50)
@@ -3298,6 +3278,9 @@ def main():
         args.csv = True
         args.json = True
         args.pdf = True
+
+    if not is_admin():
+        print("WARNING: Not running as administrator. Some checks may return incomplete or inaccurate results.")
         
     checks = {}
 
@@ -3335,11 +3318,18 @@ def main():
     }
     if args.hunt:
         audit_functions.update({
-        "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
-        "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
-        "Threat Hunt - Persistence Indicators": audit_threat_persistence_indicators,
-        "Threat Hunt - Network Connections": audit_threat_network_connections,
-    })
+            "Threat Hunt - Remote Access Tools": audit_threat_remote_access_tools,
+            "Threat Hunt - Suspicious Processes": audit_threat_suspicious_processes,
+            "Threat Hunt - Persistence Indicators": audit_threat_persistence_indicators,
+            "Threat Hunt - Network Connections": audit_threat_network_connections,
+        })
+
+    if args.checks:
+        requested = [c.strip() for c in args.checks.split(",")]
+        unknown = [c for c in requested if c not in audit_functions]
+        if unknown:
+            print(f"WARNING: Unknown check name(s) ignored: {', '.join(unknown)}")
+        audit_functions = {k: v for k, v in audit_functions.items() if k in requested}
 
 
     
@@ -3419,19 +3409,18 @@ def main():
 
     if args.baseline:
         baseline_path = output_dir / "baseline.json"
-        save_basline(report, baseline_path)
+        save_baseline(report, baseline_path)
         print(f"Baseline saved to: {baseline_path.resolve()}")
 
+    drift = None
     if args.compare:
         drift = compare_with_baseline(report, args.compare)
 
-    drift_json_path = output_dir / "drift_report.json"
-    drift_html_path = output_dir / "drift_report.html"
-
-    if args.compare:
+    if drift is not None:
+        drift_json_path = output_dir / "drift_report.json"
+        drift_html_path = output_dir / "drift_report.html"
         save_drift_report(drift, drift_json_path)
         save_drift_html_report(drift, drift_html_path)
-
         print(f"Drift JSON report saved to: {drift_json_path.resolve()}")
         print(f"Drift HTML report saved to: {drift_html_path.resolve()}")
 
