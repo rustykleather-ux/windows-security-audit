@@ -7,7 +7,7 @@ import platform
 import subprocess
 from datetime import datetime
 from pathlib import Path
-
+from string import Template
 
 
 
@@ -2544,12 +2544,12 @@ def run_fleet_scan(fleet_file):
     return results
 
 def render_template(template_name, values):
-    template_path = Path("templates") / template_name
+    template_path = Path(__file__).parent / "templates" / template_name
 
     with open(template_path, "r", encoding="utf-8") as f:
-        template = f.read()
+        template = Template(f.read())
 
-    return template.format(**values)
+    return template.safe_substitute(values)
 
 def save_fleet_dashboard(results, filename):
 
