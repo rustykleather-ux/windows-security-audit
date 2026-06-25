@@ -2432,21 +2432,107 @@ def run_remote_mini_audit(host):
 def score_remote_system(data):
     score = 0
 
-    if data.get("FirewallEnabled"):
-        score += 30
+    checks = [
+        ("FirewallEnabled", 15),
+        ("DefenderEnabled", 15),
+        ("BitLockerEnabled", 15),
+        ("ASRConfigured", 15),
+        ("LSAProtected", 10),
+        ("SMBSigningRequired", 10),
+        ("SMB1Disabled", 10),
+        ("PowerShellScriptBlockLogging", 5),
+        ("LastUpdate", 5),
+    ]
 
-    if data.get("DefenderEnabled"):
-        score += 30
-
-    if data.get("BitLockerEnabled"):
-        score += 30
-
-    if data.get("LastUpdate"):
-        score += 10
+    for key, points in checks:
+        if data.get(key):
+            score += points
 
     return score
 
+def run_remote_full_audit(host):
+    command = f"""
+    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
 
+        $firewallProfiles = Get-NetFirewallProfile -ErrorAction SilentlyContinue
+        $firewallEnabled = ($firewallProfiles | Where-Object {{ $_.Enabled -eq $true }}).Count -ge 3
+
+        $defenderStatus = Get-MpComputerStatus -ErrorAction SilentlyContinue
+        $defenderEnabled = $false
+        if ($defenderStatus) {{
+            $defenderEnabled = $defenderStatus.AntivirusEnabled -eq $true
+        }}
+
+        $bitlockerEnabled = $false
+        $bitlocker = Get-BitLockerVolume -MountPoint "C:" -ErrorAction SilentlyContinue
+        if ($bitlocker) {{
+            $bitlockerEnabled = $bitlocker.ProtectionStatus -eq "On" -or $bitlocker.ProtectionStatus -eq 1
+        }}
+
+        $asr = Get-MpPreference -ErrorAction SilentlyContinue
+        $asrConfigured = $false
+        if ($asr -and $asr.AttackSurfaceReductionRules_Ids) {{
+            $asrConfigured = $true
+        }}
+
+        $lsa = Get-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' -ErrorAction SilentlyContinue
+        $lsaProtected = $false
+        if ($lsa) {{
+            $lsaProtected = $lsa.RunAsPPL -eq 1 -or $lsa.RunAsPPLBoot -eq 1
+        }}
+
+        $smb = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
+        $smbSigningRequired = $false
+        $smb1Disabled = $false
+        if ($smb) {{
+            $smbSigningRequired = $smb.RequireSecuritySignature -eq $true
+            $smb1Disabled = $smb.EnableSMB1Protocol -eq $false
+        }}
+
+        $psScriptBlockLogging = $false
+        $psPath = 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging'
+        $psLogging = Get-ItemProperty -Path $psPath -ErrorAction SilentlyContinue
+        if ($psLogging) {{
+            $psScriptBlockLogging = $psLogging.EnableScriptBlockLogging -eq 1
+        }}
+
+        $lastUpdate = Get-HotFix |
+            Where-Object {{ $_.InstalledOn }} |
+            Sort-Object InstalledOn -Descending |
+            Select-Object -First 1
+
+        [PSCustomObject]@{{
+            Hostname = $env:COMPUTERNAME
+            FirewallEnabled = $firewallEnabled
+            DefenderEnabled = $defenderEnabled
+            BitLockerEnabled = $bitlockerEnabled
+            ASRConfigured = $asrConfigured
+            LSAProtected = $lsaProtected
+            SMBSigningRequired = $smbSigningRequired
+            SMB1Disabled = $smb1Disabled
+            PowerShellScriptBlockLogging = $psScriptBlockLogging
+            LastUpdate = if ($lastUpdate) {{ $lastUpdate.InstalledOn.ToString("yyyy-MM-dd") }} else {{ $null }}
+            DaysSincePatch = if ($lastUpdate) {{ (New-TimeSpan -Start $lastUpdate.InstalledOn -End (Get-Date)).Days }} else {{ $null }}
+        }} | ConvertTo-Json -Depth 4
+
+    }}
+    """
+
+    result = run_powershell(command, timeout=120)
+
+    if not result.get("ok"):
+        print(f"[{host}] Remote full audit PowerShell error:")
+        print(result.get("error"))
+        return None
+
+    data = parse_json_output(result)
+
+    if not data:
+        print(f"[{host}] Remote full audit JSON parse failed.")
+        print(result.get("stdout"))
+        return None
+
+    return data
 
 
 def run_fleet_scan(fleet_file):
@@ -2475,7 +2561,7 @@ def run_fleet_scan(fleet_file):
 
         print(f"[{host}] Reachable")
 
-        audit_data = run_remote_mini_audit(host)
+        audit_data = run_remote_full_audit(host)
 
         print(f"\n[{host}] Audit Data:")
         print(audit_data)
@@ -2483,6 +2569,21 @@ def run_fleet_scan(fleet_file):
         if audit_data:
             score = score_remote_system(audit_data)
             findings = []
+
+            if not audit_data.get("ASRConfigured"):
+                findings.append("ASR Rules Not Configured")
+
+            if not audit_data.get("LSAProtected"):
+                findings.append("LSA Protection Disabled")
+
+            if not audit_data.get("SMBSigningRequired"):
+                findings.append("SMB Signing Not Required")
+
+            if not audit_data.get("SMB1Disabled"):
+                findings.append("SMBv1 Enabled")
+
+            if not audit_data.get("PowerShellScriptBlockLogging"):
+                findings.append("PowerShell Script Block Logging Disabled")
 
             if not audit_data.get("FirewallEnabled"):
                 findings.append("Firewall Disabled")
@@ -2719,22 +2820,7 @@ def save_fleet_dashboard(results, filename):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(dashboard)
         
-def score_remote_system(data):
-    score = 0
 
-    if data.get("FirewallEnabled"):
-        score += 30
-
-    if data.get("DefenderEnabled"):
-        score += 30
-
-    if data.get("BitLockerEnabled"):
-        score += 30
-
-    if data.get("LastUpdate"):
-        score += 10
-
-    return score
 
 def save_baseline(report, filename):
     baseline = {
