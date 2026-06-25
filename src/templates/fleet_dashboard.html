@@ -128,67 +128,67 @@ th {
 
 <div class="card">
 <div class="label">Patch Compliance</div>
-<div class="value">{patch_compliance_percent}%</div>
+<div class="value">$patch_compliance_percent</div>
 </div>
 
 <div class="card">
 <div class="label">Patch Warning</div>
-<div class="value">{patch_warning}</div>
+<div class="value">$patch_warning</div>
 </div>
 
 <div class="card">
 <div class="label">Patch Non-Compliant</div>
-<div class="value">{patch_non_compliant}</div>
+<div class="value">$patch_non_compliant$</div>
 </div>
 
 <div class="card">
 <div class="label">Total Systems</div>
-<div class="value">{total}</div>
+<div class="value">$total</div>
 </div>
 
 <div class="card">
 <div class="label">Audited</div>
-<div class="value">{audited}</div>
+<div class="value">$audited</div>
 </div>
 
 <div class="card">
 <div class="label">Failed</div>
-<div class="value">{failed}</div>
+<div class="value">$failed</div>
 </div>
 
 <div class="card">
 <div class="label">Average Score</div>
-<div class="value">{average_score}</div>
+<div class="value">$average_score</div>
 </div>
 
 <div class="card">
 <div class="label">Organization Grade</div>
-<div class="value">{organization_grade}</div>
+<div class="value">$organization_grade</div>
 </div>
 
 <div class="card">
 <div class="label">A Systems</div>
-<div class="value">{a_count}</div>
+<div class="value">$a_count</div>
 </div>
 
 <div class="card">
 <div class="label">B Systems</div>
-<div class="value">{b_count}</div>
+<div class="value">$b_count</div>
 </div>
 
 <div class="card">
 <div class="label">C Systems</div>
-<div class="value">{c_count}</div>
+<div class="value">$c_count</div>
 </div>
 
 <div class="card">
 <div class="label">D Systems</div>
-<div class="value">{d_count}</div>
+<div class="value">$d_count</div>
 </div>
 
 <div class="card">
 <div class="label">F Systems</div>
-<div class="value">{f_count}</div>
+<div class="value">$f_count</div>
 </div>
 
 
@@ -201,7 +201,7 @@ th {
 <th>Grade</th>
 <th>Score</th>
 </tr>
-{top_risk_rows}
+$top_risk_rows
 </table>
 </div>
 </section>
@@ -213,7 +213,7 @@ th {
 <th>Finding</th>
 <th>Affected Systems</th>
 </tr>
-{common_findings_rows}
+$common_findings_rows
 </table>
 </section>
 
@@ -231,7 +231,7 @@ th {
 <th>Patch Status</th>
 <th>Reason</th>
 </tr>
-{rows}
+$rows
 </table>
 </section>
 
