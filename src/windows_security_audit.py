@@ -2433,14 +2433,14 @@ def score_remote_system(data):
     score = 0
 
     checks = [
-        ("FirewallEnabled", 15),
-        ("DefenderEnabled", 15),
-        ("BitLockerEnabled", 15),
-        ("ASRConfigured", 15),
+        ("FirewallEnabled", 12),
+        ("DefenderEnabled", 12),
+        ("BitLockerEnabled", 12),
+        ("ASRConfigured", 12),
         ("LSAProtected", 10),
-        ("SMBSigningRequired", 10),
-        ("SMB1Disabled", 10),
-        ("PowerShellScriptBlockLogging", 5),
+        ("SMBSigningRequired", 8),
+        ("SMB1Disabled", 8),
+        ("PowerShellScriptBlockLogging", 6),
         ("LastUpdate", 5),
     ]
 
@@ -2448,11 +2448,30 @@ def score_remote_system(data):
         if data.get(key):
             score += points
 
-    return score
+    if data.get("RDPEnabled") is False:
+        score += 5
+
+    if data.get("USBStorageEnabled") is False:
+        score += 3
+
+    if data.get("GuestEnabled") is False:
+        score += 4
+
+    local_admin_count = data.get("LocalAdminCount", 0)
+
+    try:
+        local_admin_count = int(local_admin_count)
+    except (TypeError, ValueError):
+        local_admin_count = 99
+
+    if local_admin_count <= 2:
+        score += 8
+
+    return min(score, 100)
 
 def run_remote_full_audit(host):
     command = f"""
-    Invoke-Command -ComputerName "{host}" -ScriptBlock {{
+    Invoke-Command -ComputerName "{host}" -ScriptBlock 
 
         $firewallProfiles = Get-NetFirewallProfile -ErrorAction SilentlyContinue
         $firewallEnabled = ($firewallProfiles | Where-Object {{ $_.Enabled -eq $true }}).Count -ge 3
@@ -2475,7 +2494,7 @@ def run_remote_full_audit(host):
             $asrConfigured = $true
         }}
 
-        $lsa = Get-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' -ErrorAction SilentlyContinue
+        $lsa = Get-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa" -ErrorAction SilentlyContinue
         $lsaProtected = $false
         if ($lsa) {{
             $lsaProtected = $lsa.RunAsPPL -eq 1 -or $lsa.RunAsPPLBoot -eq 1
@@ -2490,7 +2509,7 @@ def run_remote_full_audit(host):
         }}
 
         $psScriptBlockLogging = $false
-        $psPath = 'HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging'
+        $psPath = "HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging"
         $psLogging = Get-ItemProperty -Path $psPath -ErrorAction SilentlyContinue
         if ($psLogging) {{
             $psScriptBlockLogging = $psLogging.EnableScriptBlockLogging -eq 1
@@ -2500,8 +2519,31 @@ def run_remote_full_audit(host):
             Where-Object {{ $_.InstalledOn }} |
             Sort-Object InstalledOn -Descending |
             Select-Object -First 1
+        
+        $rdpEnabled = $false
+        $rdp = Get-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server" -Name fDenyT
+        if ($rdp) {{
+            if ($rdp.fDenyTSConnections -eq 0)  {{
+                $rdpEnabled = $true
+            }}
+        }}
 
-        [PSCustomObject]@{{
+        $usbStorageEnabled = $true
+        $usb = Get-ItemProperty -Path "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR" -ErrorAction SilentlyContinue
+        if ($usb) {{
+            $usbStorageEnabled = $usb.Start -ne 4
+        }}
+
+        $guestEnabled = $false
+        $guest = Get-LocalUser -Name "Guest" -ErrorAction SilentlyContinue
+        if ($guest) {{
+            $guestEnabled = $guest.Enabled -eq $true
+        }}
+
+        $localAdmins = Get-LocalGroupMember -Group Administrators -ErrorAction SilentlyContinue
+        $localAdminCount = if ($localAdmins) {{ $localAdmins.Count }} else {{ 0 }}
+
+         [PSCustomObject]@{{
             Hostname = $env:COMPUTERNAME
             FirewallEnabled = $firewallEnabled
             DefenderEnabled = $defenderEnabled
@@ -2511,11 +2553,15 @@ def run_remote_full_audit(host):
             SMBSigningRequired = $smbSigningRequired
             SMB1Disabled = $smb1Disabled
             PowerShellScriptBlockLogging = $psScriptBlockLogging
+            USBStorageEnabled = $usbStorageEnabled
             LastUpdate = if ($lastUpdate) {{ $lastUpdate.InstalledOn.ToString("yyyy-MM-dd") }} else {{ $null }}
             DaysSincePatch = if ($lastUpdate) {{ (New-TimeSpan -Start $lastUpdate.InstalledOn -End (Get-Date)).Days }} else {{ $null }}
+            RDPEnabled =$rdpEnabled
+            USBStrorageEnabled = $usbStorageEnabled
+            GuestEnabled = $guestEnabled
+            LocalAdminCount = $localAdminCount
         }} | ConvertTo-Json -Depth 4
 
-    }}
     """
 
     result = run_powershell(command, timeout=120)
@@ -2598,6 +2644,25 @@ def run_fleet_scan(fleet_file):
                 findings.append("Missing Last Update")
 
             last_update = audit_data.get("LastUpdate")
+
+            if audit_data.get("RDPEnabled"):
+                findings.append("RDP Enabled")
+
+            if audit_data.get("USBStorageEnabled"):
+                findings.append("USB Storage Enabled")
+
+            if audit_data.get("GuestEnabled"):
+                findings.append("Guest Account Enabled")
+
+            local_admin_count = audit_data.get("LocalAdminCount", 0)
+
+            try:
+                local_admin_count = int(local_admin_count)
+            except (TypeError, ValueError):
+                local_admin_count = 99
+
+            if local_admin_count > 2:
+                findings.append(f"High Local Admin Count: {local_admin_count}")
             
             days_since_patch = audit_data.get("DaysSincePatch")
             
@@ -2688,6 +2753,9 @@ def save_fleet_dashboard(results, filename):
         "Defender Disabled": 0,
         "BitLocker Disabled": 0,
         "Missing Last Update": 0,
+        "RDP Enabled": 0,
+        "USB Storage Enabled": 0,
+        "Guest Account Enabled": 0,
     }
 
     for result in results:
